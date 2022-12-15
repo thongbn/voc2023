@@ -80,8 +80,8 @@ const init = async () => {
         await redisConnect();
         console.log("Redis connect - PASSED");
 
-        await registerSub();
-        console.log("Subscribe listened - PASSED");
+        // await registerSub();
+        // console.log("Subscribe listened - PASSED");
     } catch (e) {
         console.error("Error init:", e);
         process.exit(1);
