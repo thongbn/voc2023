@@ -5,6 +5,7 @@ import app from './app';
 import debugLib from "debug";
 import db from "./models";
 import {redisConnect} from "./database/RedisClient";
+import kafkaClient from "./database/KaffkaClient";
 import {registerSub} from "./pubsub";
 
 /**
@@ -80,6 +81,8 @@ const init = async () => {
         await redisConnect();
         console.log("Redis connect - PASSED");
 
+        await kafkaClient.connect();
+        console.log("Producer connected - PASSED");
         // await registerSub();
         // console.log("Subscribe listened - PASSED");
     } catch (e) {
