@@ -58,8 +58,8 @@ export default class FacebookHookController extends BaseController {
             kafkaClient
                 .sendFacebook(req.body)
                 .catch(e => {
-                console.error(e);
-            });
+                    console.error(e);
+                });
             return res.json({
                 success: true
             });
