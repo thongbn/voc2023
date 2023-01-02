@@ -1,4 +1,5 @@
 import HookController from "../controller/hook";
+import AdminController from "../controller/admin";
 
 /**
  *
@@ -12,6 +13,7 @@ const registerRouter = (app, baseController, middlewares = []) => {
 
 const initRouter = (app) => {
     registerRouter(app, new HookController());
+    registerRouter(app, new AdminController());
     // registerRouter(app, new AppointmentController(), [AuthenticateMiddleware]);
     // registerRouter(app, new UserController());
     // registerRouter(app, new DashboardController(), [AuthenticateMiddleware]);

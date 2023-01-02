@@ -15,12 +15,14 @@ sequelize = new Sequelize({
     },
     timezone: "+07:00",
     define: {
-        charset: "utf8bm4",
+        charset: "utf8mb4",
     }
 });
 
 const db = {
     // User: require(path.join(__dirname, "user"))(sequelize, Sequelize.DataTypes),
+    Setting: require(path.join(__dirname, "Setting"))(sequelize, Sequelize.DataTypes),
+    RawData: require(path.join(__dirname, "RawData"))(sequelize, Sequelize.DataTypes),
 };
 
 Object.keys(db).forEach(modelName => {

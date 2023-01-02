@@ -7,7 +7,7 @@ import debugLib from "debug";
 import db from "./models";
 import {redisConnect} from "./database/RedisClient";
 import kafkaClient from "./database/KaffkaClient";
-import {registerSub} from "./pubsub";
+// import {registerSub} from "./pubsub";
 
 /**
  * Normalize a port into a number, string, or false.

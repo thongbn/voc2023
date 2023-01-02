@@ -21,6 +21,10 @@ export const redisConnect = async () => {
     await publisher.connect();
 };
 
+/**
+ *
+ * @returns {RedisClient}
+ */
 export const redisClient = () => {
     return client;
 };
