@@ -1,13 +1,4 @@
-// import AuthController from "../controller/AuthController";
-// import UserController from "../controller/UserController";
-// import AppointmentController from "../controller/AppointmentController";
-// import DashboardController from "../controller/DashboardController";
-// import MemberController from "../controller/MemberController";
-// import PromotionController from "../controller/PromotionController";
-// import TransactionController from "../controller/TransactionController";
-// import SmileUpController from "../controller/smileup";
-// import AuthenticateMiddleware from "../middleware/AuthenticateMiddleware";
-// import ReportController from "../controller/ReportController";
+import HookController from "../controller/hook";
 
 /**
  *
@@ -20,7 +11,7 @@ const registerRouter = (app, baseController, middlewares = []) => {
 };
 
 const initRouter = (app) => {
-    // registerRouter(app, new AuthController());
+    registerRouter(app, new HookController());
     // registerRouter(app, new AppointmentController(), [AuthenticateMiddleware]);
     // registerRouter(app, new UserController());
     // registerRouter(app, new DashboardController(), [AuthenticateMiddleware]);

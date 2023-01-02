@@ -1,4 +1,5 @@
 //CREATE SERVER
+require('dotenv').config();
 import http from "http";
 
 import app from './app';
@@ -80,7 +81,7 @@ const init = async () => {
         console.log("Db authenticate - PASSED");
         await redisConnect();
         console.log("Redis connect - PASSED");
-
+        await kafkaClient.init();
         await kafkaClient.connect();
         console.log("Producer connected - PASSED");
         // await registerSub();

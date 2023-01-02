@@ -1,4 +1,5 @@
 import * as dotenv from 'dotenv'
+
 dotenv.config({path: `${__dirname}/../.env`});
 
 import express from 'express';
@@ -12,9 +13,15 @@ app.use(cors({
     optionsSuccessStatus: 200
 }));
 app.use(express.static(`${__dirname}/../public`));
+
+//Special
 app.use(cookieParser());
+app.use(express.json({
+    verify: function (req, res, buf, encoding) {
+        req.rawBody = buf;
+    }
+}));
 app.use(express.urlencoded({extended: true}));
-app.use(express.json());
 
 initRouter(app);
 

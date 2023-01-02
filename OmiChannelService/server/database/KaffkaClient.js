@@ -1,35 +1,48 @@
 import {Kafka} from 'kafkajs';
+import crypto from 'crypto';
 
-class KafkaClient {
-    constructor(clientId, brokers) {
-        this.kafka = new Kafka({
-            clientId: clientId,
-            brokers: brokers
+let kafka;
+let producer;
+export default {
+    async init() {
+        kafka = new Kafka({
+            clientId: process.env.KAFKA_CLIENT_ID,
+            brokers: process.env.KAFKA_BROKER.split(",")
         });
-        this.producer = this.kafka.producer();
-    }
+        producer = kafka.producer();
+    },
 
     async connect() {
         try {
             console.log('Kafka Producer connecting...');
-            await this.producer.connect();
+            await producer.connect();
         } catch (e) {
             throw e;
         }
-    }
+    },
 
     /**
-     *
      * @param topic string
      * @param messages any
      * @returns {Promise<RecordMetadata[]>}
      */
     async send(topic, messages) {
-        return await this.producer.send({
+        const json = JSON.stringify(messages);
+        console.log(topic, json);
+        const key = crypto.createHash('md5')
+            .update(json)
+            .digest("hex");
+
+        return await producer.send({
             topic,
-            messages
+            messages: [
+                {
+                    key,
+                    value: json
+                }
+            ]
         });
-    }
+    },
 
     /**
      *
@@ -45,7 +58,7 @@ class KafkaClient {
         } catch (e) {
             throw e;
         }
-    }
+    },
 
     /**
      *
@@ -61,7 +74,7 @@ class KafkaClient {
         } catch (e) {
             throw e;
         }
-    }
+    },
 
     /**
      *
@@ -77,16 +90,5 @@ class KafkaClient {
         } catch (e) {
             throw e;
         }
-    }
+    },
 }
-
-
-const kafkaClient = new KafkaClient(
-    process.env.KAFKA_CLIENT_ID,
-    process.env.KAFKA_BROKER.split(",")
-);
-
-/**
- * KafkaClient singleton
- */
-export default kafkaClient;
