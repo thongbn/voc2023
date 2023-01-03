@@ -1,5 +1,5 @@
-import TransactionPublisher from "./TransactionPublisher";
+// import TransactionPublisher from "./TransactionPublisher";
 
 export const registerSub = async () => {
-    TransactionPublisher.registerSubscribe();
+    // TransactionPublisher.registerSubscribe();
 };

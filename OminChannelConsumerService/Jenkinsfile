@@ -1,0 +1,15 @@
+pipeline {
+   agent any
+   stages {
+        stage('Build'){
+            steps{
+                script {
+                    dir("affiliate-service"){
+                        docker.build("smileup/affiliate-service:${env.BUILD_ID}")
+                        docker.build("smileup/affiliate-service:latest")
+                    }
+                }
+            }
+        }
+    }
+}
