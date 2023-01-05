@@ -22,6 +22,7 @@ module.exports = (sequelize) => {
         platformId: DataTypes.STRING,
         customerId: DataTypes.INTEGER.UNSIGNED,
         type: DataTypes.STRING,
+        isDeleted: DataTypes.BOOLEAN,
         data: DataTypes.JSON,
     }, {
         sequelize,

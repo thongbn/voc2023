@@ -22,6 +22,7 @@ module.exports = (sequelize) => {
         messageId: DataTypes.INTEGER.UNSIGNED,
         platform: DataTypes.STRING(20),
         platformId: DataTypes.STRING,
+        ts: "TIMESTAMP",
         type: DataTypes.STRING,
         data: DataTypes.JSON,
         isError: DataTypes.BOOLEAN,

@@ -6,6 +6,7 @@ const {
 
 module.exports = (sequelize) => {
     class Ticket extends Model {
+
         /**
          * Helper method for defining associations.
          * This method is not a part of Sequelize lifecycle.

@@ -34,23 +34,22 @@ export default {
             consumer.run({
                 partitionsConsumedConcurrently: 3, // Default: 1
                 eachMessage: async ({ topic, partition, message }) => {
-                    console.log("topic | partition | message: ", topic, partition, message)
+                    console.log("topic | partition | message: ", topic, partition, message.value.toString());
                     try {
                         switch (topic) {
                             case process.env.KAFKA_TOPIC_FB:
-                                handleFacebookService(message);
+                                await handleFacebookService(message);
                                 break;
                             case process.env.KAFKA_TOPIC_INSTAGRAM:
-                                handleInstagramService(message);
+                                await handleInstagramService(message);
                                 break;
                             case process.env.KAFKA_TOPIC_INSTAGRAM:
-                                handleZlService(message);
+                                await handleZlService(message);
                                 break;
                             default:
                                 throw new Error("Unhandle topic", topic, message);
                         }
                     } catch (e) {
-                        console.log("Errors: ", message);
                         console.error(e);
                     }
                 },

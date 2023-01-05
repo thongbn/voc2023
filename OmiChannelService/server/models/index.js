@@ -23,6 +23,9 @@ const db = {
     // User: require(path.join(__dirname, "user"))(sequelize, Sequelize.DataTypes),
     Setting: require(path.join(__dirname, "Setting"))(sequelize, Sequelize.DataTypes),
     RawData: require(path.join(__dirname, "RawData"))(sequelize, Sequelize.DataTypes),
+    Message: require(path.join(__dirname, "Message"))(sequelize, Sequelize.DataTypes),
+    Ticket: require(path.join(__dirname, "Ticket"))(sequelize, Sequelize.DataTypes),
+    Customer: require(path.join(__dirname, "Customer"))(sequelize, Sequelize.DataTypes),
 };
 
 Object.keys(db).forEach(modelName => {

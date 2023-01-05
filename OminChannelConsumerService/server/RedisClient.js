@@ -12,13 +12,13 @@ export const redisConnect = async () => {
     client.on('error', (err) => console.error('Redis Client Error', err));
     await client.connect();
 
-    //
-    subscriber = client.duplicate();
-    await subscriber.connect();
+    // //
+    // subscriber = client.duplicate();
+    // await subscriber.connect();
 
-    //
-    publisher = client.duplicate();
-    await publisher.connect();
+    // //
+    // publisher = client.duplicate();
+    // await publisher.connect();
 };
 
 /**
@@ -29,10 +29,10 @@ export const redisClient = () => {
     return client;
 };
 
-export const subClient = () => {
-    return subscriber;
-};
+// export const subClient = () => {
+//     return subscriber;
+// };
 
-export const publishClient = () => {
-    return publisher;
-};
+// export const publishClient = () => {
+//     return publisher;
+// };

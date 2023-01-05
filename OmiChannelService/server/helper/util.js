@@ -20,10 +20,10 @@ export const genRefreshTokenKey = (user) => {
 
 export const genJwt = (user) => {
     return jwt.sign({
-            id: user.id,
-            email: user.email,
-            iat: Math.floor(Date.now() / 1000),
-        }
+        id: user.id,
+        email: user.email,
+        iat: Math.floor(Date.now() / 1000),
+    }
         , process.env.JWT_KEY
         , {
             expiresIn: '24h'
@@ -45,3 +45,7 @@ export const getUser = (req) => {
 export const isHookUser = (req) => {
     return req.isHookUser;
 };
+
+export const log = (title, error) => {
+    
+}

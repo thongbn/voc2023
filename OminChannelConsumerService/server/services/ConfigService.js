@@ -5,7 +5,17 @@ export const getFacebookSettings = async () => {
     const settings = await getOmiConfig();
     return {
         verifyToken: settings.facebook.verifyToken,
-        appSecret: settings.facebook.appSecret
+        appSecret: settings.facebook.appSecret,
+        accessToken: settings.facebook.accessToken,
+    }
+};
+
+export const getInstgramSettings = async () => {
+    const settings = await getOmiConfig();
+    return {
+        verifyToken: settings.instagram.verifyToken,
+        appSecret: settings.instagram.appSecret,
+        accessToken: settings.instagram.accessToken,
     }
 };
 
@@ -63,11 +73,13 @@ export const getOmiConfig = async () => {
                 }, facebook: {
                     topic: process.env.KAFKA_TOPIC_FB,
                     verifyToken: process.env.FACEBOOK_VERIFY_TOKEN,
-                    appSecret: process.env.FACEBOOK_APP_SECRET
+                    appSecret: process.env.FACEBOOK_APP_SECRET,
+                    accessToken: process.env.FACEBOOK_ACCESS_TOKEN,
                 }, instagram: {
                     topic: process.env.KAFKA_TOPIC_INSTAGRAM,
                     verifyToken: process.env.FACEBOOK_VERIFY_TOKEN,
-                    appSecret: process.env.FACEBOOK_APP_SECRET
+                    appSecret: process.env.FACEBOOK_APP_SECRET,
+                    accessToken: process.env.INSTGRAM_ACCESS_TOKEN,
                 }
             };
             model = db.Setting.build({
