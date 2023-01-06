@@ -3,14 +3,13 @@ import { createConversationId } from "../appHelper";
 import db from "../models";
 import { getInstgramSettings } from "./ConfigService";
 import { updateOrCreateCustomer } from "./CustomerService";
-import { updateOrCreateMessage } from "./MessageService";
+import { findMessageByMid, updateOrCreateMessage } from "./MessageService";
 import { createRawData } from "./RawService";
 import { updateOrCreateTicket } from "./TicketService";
 
 export const handleInstagramService = (message) => {
     try {
         const messageString = message.value.toString();
-        console.log("handleIG", messageString);
         //Save raw message
         const data = JSON.parse(messageString);
         const { entry } = data;
@@ -84,10 +83,58 @@ const handleMessage = async (id, time, messaging) => {
     }
 }
 
-const handleReaction = async (reaction) => {
+const handleReaction = async (messaging) => {
+    const { sender, recipient, timestamp, reaction } = messaging;
     const { mid, action, emoji } = reaction;
     try {
+        // find by mid
+        const message = await findMessageByMid(PLATFORM_IG, mid);
+        if (!message) {
+            throw new Error("Mid id is not found", mid);
+        }
 
+        let otherData = {};
+        try {
+            otherData = JSON.parse(message.other);
+            if (!otherData) {
+                otherData = {};
+            }
+        } catch (e) {
+            otherData = {};
+        }
+
+        let reactionData = otherData.reaction ? otherData.reaction : [];
+        let reactionObj = null;
+        const idx = reactionData.findIndex(item => item.sender === sender.id);
+        switch (action) {
+            case "react":
+                reactionObj = {
+                    sender: sender.id,
+                    emoji
+                };
+                if (idx === -1) {
+                    reactionData.push(reactionObj);
+                } else {
+                    reactionData[idx] = reactionObj;
+                }
+                break;
+            case "unreact":
+                if (idx !== -1) {
+                    reactionData.splice(idx, 1);
+                }
+                break;
+            default:
+                console.log("Unsupported action", action);
+                return;
+        }
+
+
+        otherData = {
+            ...otherData,
+            reaction: reactionData
+        };
+        message.other = JSON.stringify(otherData);
+        await message.save();
     } catch (e) {
         throw e;
     }
