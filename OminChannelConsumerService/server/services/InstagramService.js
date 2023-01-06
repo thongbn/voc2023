@@ -1,4 +1,4 @@
-import { IG_MESSAGE, IG_POSTBACK, MESSAGE_TYPE_ATTACHMENTS, MESSAGE_TYPE_TEXT, PLATFORM_IG, TICKET_TYPE_MESSAGE } from "../appConst";
+import { IG_MESSAGE, IG_POSTBACK, MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_IG, TICKET_TYPE_MESSAGE } from "../appConst";
 import { createConversationId } from "../appHelper";
 import db from "../models";
 import { getInstgramSettings } from "./ConfigService";
@@ -49,12 +49,11 @@ const handleMessage = async (id, time, messaging) => {
             const rawMessage = await createRawData(PLATFORM_IG, id, time, IG_POSTBACK, JSON.stringify(messaging));
             try {
                 const message = await handlePostback(id, messaging);
-                rawMessage.messageId = message?.id;
             } catch (e) {
                 rawMessage.isError = true;
                 rawMessage.errorMessage = e.message;
-            } finally {
                 rawMessage.save();
+            } finally {
             }
         }
 
@@ -84,6 +83,7 @@ const handleMessage = async (id, time, messaging) => {
 }
 
 const handleReaction = async (messaging) => {
+    //Todo lock mid
     const { sender, recipient, timestamp, reaction } = messaging;
     const { mid, action, emoji } = reaction;
     try {
@@ -144,8 +144,35 @@ const handlePostback = async () => {
 
 }
 
-const handleRead = async () => {
+const handleRead = async (messaging) => {
+    try {
+        //Todo lock mid
+        const { read } = messaging;
+        const { mid } = read;
+        const message = await findMessageByMid(PLATFORM_IG, mid);
+        if (!message) {
+            throw new Error("Mid id is not found", mid);
+        }
 
+        let otherData = {};
+        try {
+            otherData = JSON.parse(message.other);
+            if (!otherData) {
+                otherData = {};
+            }
+        } catch (e) {
+            otherData = {};
+        }
+
+        otherData = {
+            ...otherData,
+            isRead: true,
+        }
+        message.other = JSON.stringify(otherData);
+        await message.save();
+    } catch (e) {
+        throw e;
+    }
 }
 
 const handleTextAndAttachmentMessage = async (igId, messaging, rawMessage) => {
@@ -163,51 +190,52 @@ const handleTextAndAttachmentMessage = async (igId, messaging, rawMessage) => {
     try {
         //TRANSACTION HERE
         const messages = await db.sequelize.transaction(async (t) => {
-            const messages = [];
+            const messages = null;
             //FIND OR CREATE OPEN TICKET
             const ticket = await updateOrCreateTicket(PLATFORM_IG, igId, TICKET_TYPE_MESSAGE, createConversationId(senderCustomer, reciptientCustomer), senderCustomer.id);
 
             //SAVE MESSAGE FOR TICKET
-            if (text) {
-                //create text message
-                const textMessage = await updateOrCreateMessage(PLATFORM_IG, mid);
-                textMessage.type = MESSAGE_TYPE_TEXT;
-                textMessage.data = JSON.stringify({
-                    text
-                });
+            const textMessage = await updateOrCreateMessage(PLATFORM_IG, mid);
+            textMessage.type = MESSAGE_TYPE_TEXT_ATTACHMENTS;
+            if (!is_deleted) {
+                let messData = textMessage.data ? JSON.parse(textMessage) : {};
+                if (text) {
+                    messData = {
+                        ...messData,
+                        text: text
+                    }
+
+                    //Update new information ticket
+                    //Define page or customer;
+                    if (!ticket.firstMessage) {
+                        ticket.firstMessage = text;
+                    }
+
+                    if (igSettings.pageId != sender.id) {
+                        ticket.lcm = text;
+                    }
+
+                }
+                if (attachments) {
+                    messData = {
+                        ...messData,
+                        attachments
+                    }
+                    if (!ticket.firstMessage) {
+                        ticket.firstMessage = "Customer send Attachment";
+                    }
+                }
+
+                textMessage.data = JSON.stringify(messData);
                 textMessage.customerId = senderCustomer.id;
                 textMessage.ticketId = ticket.id;
                 textMessage.rawId = rawMessage.id;
                 await textMessage.save();
-                messages.push(textMessage);
-
-                //Update new information ticket
-                //Define page or customer;
-                if (!ticket.firstMessage) {
-                    ticket.firstMessage = text;
-                }
-
-                if (igSettings.pageId != sender.id) {
-                    ticket.lcm = text;
-                }
+                messages = textMessage;
+            } else {
+                textMessage.isDeleted = true;
             }
 
-            if (attachments) {
-                const attachmentMessages = await Promise.all(attachments.map(async item => {
-                    const mes = await updateOrCreateMessage(PLATFORM_IG, mid);
-                    mes.type = MESSAGE_TYPE_ATTACHMENTS;
-                    mes.data = JSON.stringify(item);
-                    mes.customerId = senderCustomer.id;
-                    mes.ticketId = ticket.id;
-                    mes.rawId = rawMessage.id;
-                    await mes.save();
-                    return mes;
-                }));
-                if (!ticket.firstMessage) {
-                    ticket.firstMessage = "Customer send Attachment";
-                }
-                messages.push(...attachmentMessages);
-            }
 
             if (igSettings.pageId == sender.id) {
                 ticket.lrmTime = new Date();
