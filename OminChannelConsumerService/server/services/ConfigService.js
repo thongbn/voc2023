@@ -16,6 +16,7 @@ export const getInstgramSettings = async () => {
         verifyToken: settings.instagram.verifyToken,
         appSecret: settings.instagram.appSecret,
         accessToken: settings.instagram.accessToken,
+        pageId: settings.instagram.pageId
     }
 };
 

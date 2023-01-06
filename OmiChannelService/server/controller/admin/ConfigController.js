@@ -33,11 +33,13 @@ export default class ConfigController extends BaseController {
             }, facebook = {
                 topic: process.env.KAFKA_TOPIC_FB,
                 verifyToken: process.env.FACEBOOK_VERIFY_TOKEN,
-                appSecret: process.env.FACEBOOK_APP_SECRET
+                appSecret: process.env.FACEBOOK_APP_SECRET,
+                pageId: process.env.FACEBOOK_PAGE_ID,
             }, instagram = {
                 topic: process.env.KAFKA_TOPIC_INSTAGRAM,
                 verifyToken: process.env.FACEBOOK_VERIFY_TOKEN,
-                appSecret: process.env.FACEBOOK_APP_SECRET
+                appSecret: process.env.FACEBOOK_APP_SECRET,
+                pageId: process.env.INSTAGRAM_ACC_ID
             }
         } = req.body;
         try{

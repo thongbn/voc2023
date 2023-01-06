@@ -21,6 +21,7 @@ module.exports = (sequelize) => {
     Ticket.init({
         platform: DataTypes.STRING(20),
         platformId: DataTypes.STRING,
+        cId: DataTypes.STRING,
         customerId: DataTypes.INTEGER.UNSIGNED,
         type: DataTypes.STRING(20),
         caseStatus: DataTypes.STRING(20),
@@ -38,7 +39,13 @@ module.exports = (sequelize) => {
     }, {
         sequelize,
         modelName: 'Ticket',
-        tableName: "ticket"
+        tableName: "ticket",
+        indexes: [
+            {
+                name: "t_p_tu",
+                fields: ['platform', 'platformId', 'cId', 'type', 'caseStatus'],
+            }
+        ]
     });
 
     return Ticket;

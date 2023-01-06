@@ -11,7 +11,7 @@ export const findMessageByMid = async (platform, mid) => {
 
 export const updateOrCreateMessage = async (platform, mid) => {
     //TODO Lock mid
-    const model = await findByMid(platform, mid);
+    let model = await findMessageByMid(platform, mid);
     if (!model) {
         model = db.Message.build({
             platform,

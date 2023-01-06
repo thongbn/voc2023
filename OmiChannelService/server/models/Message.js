@@ -26,6 +26,8 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         isDeleted: DataTypes.BOOLEAN,
         data: DataTypes.JSON,
+        other: DataTypes.JSON,
+        rawId: DataTypes.INTEGER.UNSIGNED,
     }, {
         sequelize,
         modelName: 'Message',

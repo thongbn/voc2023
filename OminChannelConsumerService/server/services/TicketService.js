@@ -16,22 +16,37 @@ export const findLatestAndUnresovledTicketByCustomerId = async (platform, platfo
     });
 }
 
+export const findLatestAndUnresovledTicketByUniqueId = async (platform, platformId, type, cId) => {
+    return await db.Ticket.findOne({
+        where: {
+            platform,
+            platformId,
+            cId,
+            type,
+            caseStatus: {
+                [Op.ne]: TICKET_CASE_STATUS_DONE
+            }
+        }
+    });
+}
+
 /**
  * 
  * @param {string} platform 
  * @param {string} platformId 
  * @returns {Ticket}
  */
-export const updateOrCreateTicket = async (platform, platformId, type, customerId) => {
+export const updateOrCreateTicket = async (platform, platformId, type, cId, customerId) => {
     //TODO Redis lock to customer ticket to find
-    const model = await findLatestAndUnresovledTicketByCustomerId(platform, platformId, type, customerId);
+    let model = await findLatestAndUnresovledTicketByUniqueId(platform, platformId, type, cId);
     if (!model) {
         model = await db.Ticket.build({
             platform,
             platformId,
+            cId,
             customerId,
             type,
-            caseStatus: TICKET_CASE_STATUS_NEW
+            caseStatus: TICKET_CASE_STATUS_NEW,
         });
         await model.save();
     }

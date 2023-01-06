@@ -20,6 +20,7 @@ module.exports = (sequelize) => {
     Ticket.init({
         platform: DataTypes.STRING(20),
         platformId: DataTypes.STRING,
+        cId: DataTypes.STRING,
         customerId: DataTypes.INTEGER.UNSIGNED,
         type: DataTypes.STRING(20),
         caseStatus: DataTypes.STRING(20),
