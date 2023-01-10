@@ -1,19 +1,19 @@
-import { FB_MESSAGE, MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_FB, TICKET_TYPE_MESSAGE } from "../appConst";
-import { createConversationId } from "../appHelper";
-import { getInstgramSettings } from "./ConfigService";
-import { updateOrCreateCustomer } from "./CustomerService";
-import { findMessageByMid, lockAndUpdateMessage, updateOrCreateMessage } from "./MessageService";
-import { createRawData } from "./RawService";
-import { updateOrCreateTicket } from "./TicketService";
+import {FB_MESSAGE, MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_FB, PLATFORM_IG, TICKET_TYPE_MESSAGE} from "../appConst";
+import {createConversationId} from "../appHelper";
+import {getInstgramSettings} from "./ConfigService";
+import {updateOrCreateCustomer} from "./CustomerService";
+import {findMessageByMid, lockAndUpdateMessage, updateOrCreateMessage, updateRead} from "./MessageService";
+import {createRawData} from "./RawService";
+import {updateOrCreateTicket} from "./TicketService";
 
 export const handleFacebookService = async (message) => {
     try {
         const messageString = message.value.toString();
         //Save raw message
         const data = JSON.parse(messageString);
-        const { entry } = data;
+        const {entry} = data;
         entry.forEach(item => {
-            const { id, time, messaging } = item;
+            const {id, time, messaging} = item;
             //TODO hop_context
 
             handleMessagingArray(id, time, messaging);
@@ -49,12 +49,30 @@ const handleMessagingArray = (id, time, messaging) => {
  * */
 const handleMessage = async (id, time, messaging) => {
     try {
-        const { message } = messaging;
+        const {message, postback, reaction, read} = messaging;
 
-        //Delivery
-        // if (delivery) {
-        //     handleDelivery(messaging);
-        // }
+        //Truong hop reaction
+        if (reaction) {
+            await handleReaction(messaging);
+        }
+
+        //Truong hop messagin seen
+        if (read) {
+            await handleRead(messaging);
+        }
+
+        //Truong hop message type postback
+        if (postback) {
+            const rawMessage = await createRawData(PLATFORM_IG, id, time, IG_POSTBACK, JSON.stringify(messaging));
+            try {
+                await handlePostback(id, messaging);
+            } catch (e) {
+                rawMessage.isError = true;
+                rawMessage.errorMessage = e.message;
+                rawMessage.save();
+            } finally {
+            }
+        }
 
         //Truong hop xu ly message binh thuong
         if (message) {
@@ -74,11 +92,28 @@ const handleMessage = async (id, time, messaging) => {
     }
 };
 
-const handleDelivery = async (messaging) => {
+const handlePostback = async (messaging) => {
+    //TODO postback
+};
+
+const handleRead = async (messaging) => {
+    // try {
+    //     //Todo lock mid
+    //     const {sender, read} = messaging;
+    //     const {watermark} = read;
+    //     const customer = updateOrCreateCustomer(PLATFORM_FB, sender.id);
+    //     // await updateRead(PLATFORM_FB, customer.id);
+    // } catch (e) {
+    //     throw e;
+    // }
+};
+
+const handleReaction = async (messaging) => {
+    //Todo lock mid
+    const {sender, reaction} = messaging;
+    const {mid, action, emoji} = reaction;
     try {
-        //Todo lock mid
-        const { delivery } = messaging;
-        const { watermark } = delivery;
+        // find by mid
         const message = await findMessageByMid(PLATFORM_FB, mid);
         if (!message) {
             throw new Error(`Mid id is not found ${mid}`);
@@ -94,9 +129,35 @@ const handleDelivery = async (messaging) => {
             otherData = {};
         }
 
+        let reactionData = otherData.reaction ? otherData.reaction : [];
+        let reactionObj = null;
+        const idx = reactionData.findIndex(item => item.sender === sender.id);
+        switch (action) {
+            case "react":
+                reactionObj = {
+                    sender: sender.id,
+                    emoji
+                };
+                if (idx === -1) {
+                    reactionData.push(reactionObj);
+                } else {
+                    reactionData[idx] = reactionObj;
+                }
+                break;
+            case "unreact":
+                if (idx !== -1) {
+                    reactionData.splice(idx, 1);
+                }
+                break;
+            default:
+                console.log("Unsupported action", action);
+                return;
+        }
+
+
         otherData = {
             ...otherData,
-            isRead: true,
+            reaction: reactionData
         };
         message.other = JSON.stringify(otherData);
         await message.save();
@@ -106,8 +167,8 @@ const handleDelivery = async (messaging) => {
 };
 
 const handleTextAndAttachmentMessage = async (platformId, messaging, rawMessage) => {
-    const { sender, recipient, timestamp, message } = messaging;
-    const { mid, text, attachments, is_echo = false } = message;
+    const {sender, recipient, timestamp, message} = messaging;
+    const {mid, text, attachments, is_echo = false} = message;
     //VALIDATE
     if (!sender || !recipient) {
         throw new Error("handleTextAndAttachmentMessage: sender or recipient null");

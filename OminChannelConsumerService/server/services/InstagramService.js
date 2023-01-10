@@ -20,7 +20,7 @@ export const handleInstagramService = (message) => {
     } catch (e) {
         throw e;
     }
-}
+};
 
 const handleMessagingArray = (id, time, messaging) => {
     try {
@@ -33,11 +33,11 @@ const handleMessagingArray = (id, time, messaging) => {
     } catch (e) {
         console.error(e);
     }
-}
+};
 
 const handleMessage = async (id, time, messaging) => {
     try {
-        const {sender, recipient, timestamp, message, reaction, postback, refferal, read} = messaging;
+        const { message, reaction, postback, read} = messaging;
 
         //Truong hop reaction  
         if (reaction) {
@@ -48,7 +48,7 @@ const handleMessage = async (id, time, messaging) => {
         if (postback) {
             const rawMessage = await createRawData(PLATFORM_IG, id, time, IG_POSTBACK, JSON.stringify(messaging));
             try {
-                const message = await handlePostback(id, messaging);
+                await handlePostback(id, messaging);
             } catch (e) {
                 rawMessage.isError = true;
                 rawMessage.errorMessage = e.message;
@@ -66,7 +66,7 @@ const handleMessage = async (id, time, messaging) => {
         if (message) {
             let rawMessage = await createRawData(PLATFORM_IG, id, time, IG_MESSAGE, JSON.stringify(messaging));
             try {
-                const messages = await handleTextAndAttachmentMessage(id, messaging, rawMessage);
+                await handleTextAndAttachmentMessage(id, messaging, rawMessage);
                 // rawMessage.messageId = message?.id;
             } catch (e) {
                 rawMessage.isError = true;
@@ -80,11 +80,11 @@ const handleMessage = async (id, time, messaging) => {
     } catch (e) {
         throw e;
     }
-}
+};
 
 const handleReaction = async (messaging) => {
     //Todo lock mid
-    const {sender, recipient, timestamp, reaction} = messaging;
+    const {sender, reaction} = messaging;
     const {mid, action, emoji} = reaction;
     try {
         // find by mid

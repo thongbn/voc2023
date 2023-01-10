@@ -23,7 +23,7 @@ export const updateOrCreateMessage = async (platform, mid) => {
     //TODO May be can get data from mid
     await model.save();
     return model;
-}
+};
 
 /**
  * @param {db.Message} message 
@@ -70,11 +70,17 @@ export const lockAndUpdateMessage = async (message, ticketId, rawId, data) => {
         otherData = {
             ...otherData,
             isEcho: is_echo,
-        }
+        };
         message.other = JSON.stringify(otherData);
 
         await message.save();
     } else {
         message.isDeleted = true;
     }
-}
+};
+
+// export const updateRead = async (platform, customerId) => {
+//     return await db.Message.update({
+//
+//     })
+// };
