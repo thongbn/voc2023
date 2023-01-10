@@ -31,9 +31,12 @@ export const findLatestAndUnresovledTicketByUniqueId = async (platform, platform
 }
 
 /**
- * 
- * @param {string} platform 
- * @param {string} platformId 
+ *
+ * @param {string} platform
+ * @param {string} platformId
+ * @param {string} type
+ * @param {} cId
+ * @param {number} customerId
  * @returns {Ticket}
  */
 export const updateOrCreateTicket = async (platform, platformId, type, cId, customerId) => {

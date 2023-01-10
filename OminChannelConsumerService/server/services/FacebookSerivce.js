@@ -21,7 +21,7 @@ export const handleFacebookService = async (message) => {
     } catch (e) {
         throw e;
     }
-}
+};
 
 /**
  * @param {string} id
@@ -40,7 +40,7 @@ const handleMessagingArray = (id, time, messaging) => {
         console.error(e);
         //TODO Handle exception here
     }
-}
+};
 
 /**
  * @param {string} id
@@ -52,9 +52,9 @@ const handleMessage = async (id, time, messaging) => {
         const { message } = messaging;
 
         //Delivery
-        if (delivery) {
-            handleDelivery(messaging);
-        }
+        // if (delivery) {
+        //     handleDelivery(messaging);
+        // }
 
         //Truong hop xu ly message binh thuong
         if (message) {
@@ -72,16 +72,16 @@ const handleMessage = async (id, time, messaging) => {
     } catch (e) {
         throw e;
     }
-}
+};
 
 const handleDelivery = async (messaging) => {
     try {
         //Todo lock mid
         const { delivery } = messaging;
         const { watermark } = delivery;
-        const message = await findMessageByMid(PLATFORM_IG, mid);
+        const message = await findMessageByMid(PLATFORM_FB, mid);
         if (!message) {
-            throw new Error("Mid id is not found", mid);
+            throw new Error(`Mid id is not found ${mid}`);
         }
 
         let otherData = {};
@@ -97,31 +97,29 @@ const handleDelivery = async (messaging) => {
         otherData = {
             ...otherData,
             isRead: true,
-        }
+        };
         message.other = JSON.stringify(otherData);
         await message.save();
     } catch (e) {
         throw e;
     }
-}
+};
 
 const handleTextAndAttachmentMessage = async (platformId, messaging, rawMessage) => {
     const { sender, recipient, timestamp, message } = messaging;
     const { mid, text, attachments, is_echo = false } = message;
     //VALIDATE
     if (!sender || !recipient) {
-        throw new Error("handleTextAndAttachmentMessage:", "sender or recipient null");
+        throw new Error("handleTextAndAttachmentMessage: sender or recipient null");
     }
     //UPDATE OR SAVE CUSTOMER
-    const c1 = updateOrCreateCustomer(PLATFORM_FACEBOOK, sender.id);
-    const c2 = updateOrCreateCustomer(PLATFORM_FACEBOOK, recipient.id);
+    const c1 = updateOrCreateCustomer(PLATFORM_FB, sender.id);
+    const c2 = updateOrCreateCustomer(PLATFORM_FB, recipient.id);
 
-    const [senderCustomer, reciptientCustomer] = await Promise.all(c1, c2);
+    const [senderCustomer, receiverCustomer] = await Promise.all([c1, c2]);
 
     //const senderCustomer = await updateOrCreateCustomer(PLATFORM_IG, sender.id);
     //const reciptientCustomer = await updateOrCreateCustomer(PLATFORM_IG, recipient.id);
-    const settings = await getInstgramSettings();
-
     try {
         //TRANSACTION HERE
         const messages = await db.sequelize.transaction(async (t) => {
@@ -130,7 +128,7 @@ const handleTextAndAttachmentMessage = async (platformId, messaging, rawMessage)
             const ticket = await updateOrCreateTicket(PLATFORM_FB
                 , platformId
                 , TICKET_TYPE_MESSAGE
-                , createConversationId(senderCustomer, reciptientCustomer)
+                , createConversationId(senderCustomer, receiverCustomer)
                 , senderCustomer.id
             );
 
@@ -138,7 +136,7 @@ const handleTextAndAttachmentMessage = async (platformId, messaging, rawMessage)
             const textMessage = await updateOrCreateMessage(PLATFORM_FB, mid);
             textMessage.type = MESSAGE_TYPE_TEXT_ATTACHMENTS;
 
-            lockAndUpdateMessage(textMessage, ticket.id, rawMessage.id, message);
+            await lockAndUpdateMessage(textMessage, ticket.id, rawMessage.id, message);
 
             //TODO Lock and update ticket here
             if (!ticket.firstMessage) {
@@ -166,4 +164,4 @@ const handleTextAndAttachmentMessage = async (platformId, messaging, rawMessage)
     } catch (e) {
         throw e;
     }
-}
+};

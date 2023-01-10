@@ -4,7 +4,7 @@ import db from "../models"
  * 
  * @param {string} platform 
  * @param {string} platformId 
- * @param {Date} ts 
+ * @param {number} ts
  * @param {string} type 
  * @param {string} message 
  * @returns RawData

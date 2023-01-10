@@ -1,20 +1,20 @@
-import { IG_MESSAGE, IG_POSTBACK, MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_IG, TICKET_TYPE_MESSAGE } from "../appConst";
-import { createConversationId } from "../appHelper";
+import {IG_MESSAGE, IG_POSTBACK, MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_IG, TICKET_TYPE_MESSAGE} from "../appConst";
+import {createConversationId} from "../appHelper";
 import db from "../models";
-import { getInstgramSettings } from "./ConfigService";
-import { updateOrCreateCustomer } from "./CustomerService";
-import { findMessageByMid, updateOrCreateMessage } from "./MessageService";
-import { createRawData } from "./RawService";
-import { updateOrCreateTicket } from "./TicketService";
+import {getInstgramSettings} from "./ConfigService";
+import {updateOrCreateCustomer} from "./CustomerService";
+import {findMessageByMid, updateOrCreateMessage} from "./MessageService";
+import {createRawData} from "./RawService";
+import {updateOrCreateTicket} from "./TicketService";
 
 export const handleInstagramService = (message) => {
     try {
         const messageString = message.value.toString();
         //Save raw message
         const data = JSON.parse(messageString);
-        const { entry } = data;
+        const {entry} = data;
         entry.forEach(item => {
-            const { id, time, messaging } = item;
+            const {id, time, messaging} = item;
             handleMessagingArray(id, time, messaging);
         });
     } catch (e) {
@@ -37,7 +37,7 @@ const handleMessagingArray = (id, time, messaging) => {
 
 const handleMessage = async (id, time, messaging) => {
     try {
-        const { sender, recipient, timestamp, message, reaction, postback, refferal, read } = messaging;
+        const {sender, recipient, timestamp, message, reaction, postback, refferal, read} = messaging;
 
         //Truong hop reaction  
         if (reaction) {
@@ -84,13 +84,13 @@ const handleMessage = async (id, time, messaging) => {
 
 const handleReaction = async (messaging) => {
     //Todo lock mid
-    const { sender, recipient, timestamp, reaction } = messaging;
-    const { mid, action, emoji } = reaction;
+    const {sender, recipient, timestamp, reaction} = messaging;
+    const {mid, action, emoji} = reaction;
     try {
         // find by mid
         const message = await findMessageByMid(PLATFORM_IG, mid);
         if (!message) {
-            throw new Error("Mid id is not found", mid);
+            throw new Error(`Mid id is not found ${mid}`);
         }
 
         let otherData = {};
@@ -138,20 +138,20 @@ const handleReaction = async (messaging) => {
     } catch (e) {
         throw e;
     }
-}
+};
 
 const handlePostback = async () => {
     //TODO postback
-}
+};
 
 const handleRead = async (messaging) => {
     try {
         //Todo lock mid
-        const { read } = messaging;
-        const { mid } = read;
+        const {read} = messaging;
+        const {mid} = read;
         const message = await findMessageByMid(PLATFORM_IG, mid);
         if (!message) {
-            throw new Error("Mid id is not found", mid);
+            throw new Error(`Mid id is not found ${mid}`);
         }
 
         let otherData = {};
@@ -167,20 +167,20 @@ const handleRead = async (messaging) => {
         otherData = {
             ...otherData,
             isRead: true,
-        }
+        };
         message.other = JSON.stringify(otherData);
         await message.save();
     } catch (e) {
         throw e;
     }
-}
+};
 
 const handleTextAndAttachmentMessage = async (igId, messaging, rawMessage) => {
-    const { sender, recipient, timestamp, message } = messaging;
-    const { mid, text, attachments, is_deleted, quick_reply, reply_to } = message;
+    const {sender, recipient, timestamp, message} = messaging;
+    const {mid, text, attachments, is_deleted, quick_reply, reply_to} = message;
     //VALIDATE
     if (!sender || !recipient) {
-        throw new Error("handleTextAndAttachmentMessage:", "sender or recipient null");
+        throw new Error("handleTextAndAttachmentMessage:sender or recipient null");
     }
     //UPDATE OR SAVE CUSTOMER
     const senderCustomer = await updateOrCreateCustomer(PLATFORM_IG, sender.id);
@@ -190,7 +190,7 @@ const handleTextAndAttachmentMessage = async (igId, messaging, rawMessage) => {
     try {
         //TRANSACTION HERE
         const messages = await db.sequelize.transaction(async (t) => {
-            const messages = null;
+            let messages = null;
             //FIND OR CREATE OPEN TICKET
             const ticket = await updateOrCreateTicket(PLATFORM_IG, igId, TICKET_TYPE_MESSAGE, createConversationId(senderCustomer, reciptientCustomer), senderCustomer.id);
 
@@ -220,7 +220,7 @@ const handleTextAndAttachmentMessage = async (igId, messaging, rawMessage) => {
                     messData = {
                         ...messData,
                         attachments
-                    }
+                    };
                     if (!ticket.firstMessage) {
                         ticket.firstMessage = "Customer send Attachment";
                     }
@@ -251,4 +251,4 @@ const handleTextAndAttachmentMessage = async (igId, messaging, rawMessage) => {
     } catch (e) {
         throw e;
     }
-}
+};
