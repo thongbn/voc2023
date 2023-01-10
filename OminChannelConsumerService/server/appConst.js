@@ -5,6 +5,8 @@ export const PLATFORM_ZL = "zl";
 export const IG_POSTBACK = "postback";
 export const IG_MESSAGE = "message";
 
+export const FB_MESSAGE = "message";
+
 //TICKET CONSTANTS
 export const TICKET_CASE_STATUS_NEW = "1_new";
 export const TICKET_CASE_STATUS_PROCESSING = "2_processing";

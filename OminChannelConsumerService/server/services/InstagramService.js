@@ -141,7 +141,7 @@ const handleReaction = async (messaging) => {
 }
 
 const handlePostback = async () => {
-
+    //TODO postback
 }
 
 const handleRead = async (messaging) => {
