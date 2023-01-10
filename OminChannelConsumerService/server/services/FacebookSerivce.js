@@ -1,6 +1,5 @@
 import {FB_MESSAGE, MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_FB, PLATFORM_IG, TICKET_TYPE_MESSAGE} from "../appConst";
 import {createConversationId} from "../appHelper";
-import {getInstgramSettings} from "./ConfigService";
 import {updateOrCreateCustomer} from "./CustomerService";
 import {findMessageByMid, lockAndUpdateMessage, updateOrCreateMessage, updateRead} from "./MessageService";
 import {createRawData} from "./RawService";
@@ -168,7 +167,7 @@ const handleReaction = async (messaging) => {
 
 const handleTextAndAttachmentMessage = async (platformId, messaging, rawMessage) => {
     const {sender, recipient, timestamp, message} = messaging;
-    const {mid, text, attachments, is_echo = false} = message;
+    const {mid, text, attachments, is_echo = false, reply_to, quick_reply} = message;
     //VALIDATE
     if (!sender || !recipient) {
         throw new Error("handleTextAndAttachmentMessage: sender or recipient null");
@@ -184,7 +183,7 @@ const handleTextAndAttachmentMessage = async (platformId, messaging, rawMessage)
     try {
         //TRANSACTION HERE
         const messages = await db.sequelize.transaction(async (t) => {
-            const messages = null;
+            let messages = null;
             //FIND OR CREATE OPEN TICKET
             const ticket = await updateOrCreateTicket(PLATFORM_FB
                 , platformId
@@ -219,6 +218,9 @@ const handleTextAndAttachmentMessage = async (platformId, messaging, rawMessage)
 
             await ticket.save();
 
+            //TODO xử lý quick_reply, reply_to
+
+            messages = textMessage;
             return messages;
         });
         console.log(messages);
