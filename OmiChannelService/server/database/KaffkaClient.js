@@ -1,13 +1,16 @@
 import {Kafka} from 'kafkajs';
 import crypto from 'crypto';
+import {getKafkaConfig} from "../services/ConfigService";
 
 let kafka;
 let producer;
 export default {
     async init() {
+        const kafkaConfig = await getKafkaConfig();
+        console.log(kafkaConfig);
         kafka = new Kafka({
-            clientId: process.env.KAFKA_CLIENT_ID,
-            brokers: process.env.KAFKA_BROKER.split(",")
+            clientId: kafkaConfig.clientId,
+            brokers: kafkaConfig.brokers.split(",")
         });
         producer = kafka.producer({
             allowAutoTopicCreation: true,

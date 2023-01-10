@@ -9,6 +9,11 @@ export const getFacebookSettings = async () => {
     }
 };
 
+export const getKafkaConfig = async () => {
+    const {kafka} = await getOmiConfig();
+    return kafka;
+};
+
 export const setOmiConfig = async (settings) => {
     try {
         //Get from redis
