@@ -24,7 +24,7 @@ export const updateOrCreateCustomer = async (platform, platformId) => {
             platformId
         });
     }
-    //TODO Get User information from accesstoken
+    //TODO Get User information from access token
     await model.save();
     return model;
 }

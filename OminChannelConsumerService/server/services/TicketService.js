@@ -1,6 +1,6 @@
-import { Op } from "sequelize";
+import {Op} from "sequelize";
 import db from "../models"
-import { TICKET_CASE_STATUS_DONE, TICKET_CASE_STATUS_NEW } from "../appConst";
+import {TICKET_CASE_STATUS_DONE, TICKET_CASE_STATUS_NEW, TICKET_TYPE_COMMENT} from "../appConst";
 
 export const findLatestAndUnresovledTicketByCustomerId = async (platform, platformId, type, customerId) => {
     return await db.Ticket.findOne({
@@ -14,7 +14,7 @@ export const findLatestAndUnresovledTicketByCustomerId = async (platform, platfo
             }
         }
     });
-}
+};
 
 export const findLatestAndUnresovledTicketByUniqueId = async (platform, platformId, type, cId) => {
     return await db.Ticket.findOne({
@@ -28,14 +28,14 @@ export const findLatestAndUnresovledTicketByUniqueId = async (platform, platform
             }
         }
     });
-}
+};
 
 /**
  *
  * @param {string} platform
  * @param {string} platformId
  * @param {string} type
- * @param {} cId
+ * @param {string} cId
  * @param {number} customerId
  * @returns {Ticket}
  */
@@ -54,4 +54,28 @@ export const updateOrCreateTicket = async (platform, platformId, type, cId, cust
         await model.save();
     }
     return model;
-}
+};
+
+export const updateOrCreateTicketComment = async (platform, platformId, cId, customerId, mediaId) => {
+    let model = await db.Ticket.findOne({
+        where: {
+            platform,
+            platformId,
+            type: TICKET_TYPE_COMMENT,
+            cId
+        }
+    });
+    if (!model) {
+        model = await db.Ticket.build({
+            platform,
+            platformId,
+            cId,
+            customerId,
+            mediaId,
+            type: TICKET_TYPE_COMMENT,
+            caseStatus: TICKET_CASE_STATUS_NEW,
+        });
+        await model.save();
+    }
+    return model;
+};

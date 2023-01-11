@@ -123,12 +123,12 @@ export const handleTextAndAttachmentMessage = async (igId, messaging, rawMessage
             const textMessage = await updateOrCreateMessage(PLATFORM_IG, mid);
             textMessage.type = MESSAGE_TYPE_TEXT_ATTACHMENTS;
             if (!is_deleted) {
-                let messData = textMessage.data ? JSON.parse(textMessage) : {};
+                let messData = textMessage.data ? JSON.parse(textMessage.data) : {};
                 if (text) {
                     messData = {
                         ...messData,
                         text: text
-                    }
+                    };
 
                     //Update new information ticket
                     //Define page or customer;

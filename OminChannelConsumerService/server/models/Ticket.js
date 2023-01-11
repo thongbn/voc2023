@@ -21,6 +21,7 @@ module.exports = (sequelize) => {
         platform: DataTypes.STRING(20),
         platformId: DataTypes.STRING,
         cId: DataTypes.STRING,
+        mediaId: DataTypes.STRING,
         customerId: DataTypes.INTEGER.UNSIGNED,
         type: DataTypes.STRING(20),
         caseStatus: DataTypes.STRING(20),
