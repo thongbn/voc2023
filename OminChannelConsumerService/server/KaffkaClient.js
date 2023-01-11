@@ -1,13 +1,22 @@
-import { Kafka } from 'kafkajs';
-import crypto from 'crypto';
-import { getKafkaSettings } from './services/ConfigService';
-import { handleFacebookService } from './services/FacebookSerivce';
-import { handleInstagramService } from './services/InstagramService';
-import { handleZlService } from './services/ZaloService';
+import {Kafka} from 'kafkajs';
+import {getKafkaSettings} from './services/ConfigService';
+import FacebookHandler from "./handler/fb/FacebookHandler";
+import IgHandler from "./handler/ig/IgHandler";
 
 let kafka;
 let consumer;
 export default {
+
+    handlers: {},
+
+    /**
+     *
+     * @param {BaseHandler} handler
+     */
+    registerHandler(handler) {
+        this.handlers[handler.topic] = handler;
+    },
+
     async init() {
         const settings = await getKafkaSettings();
         kafka = new Kafka({
@@ -17,6 +26,9 @@ export default {
         consumer = kafka.consumer({
             groupId: process.env.KAFKA_GROUP_ID
         });
+
+        this.registerHandler(new FacebookHandler());
+        this.registerHandler(new IgHandler());
     },
 
     async connect() {
@@ -33,21 +45,13 @@ export default {
             console.log('Kafka Consumer running...');
             consumer.run({
                 partitionsConsumedConcurrently: 3, // Default: 1
-                eachMessage: async ({ topic, partition, message }) => {
+                eachMessage: async ({topic, partition, message}) => {
                     console.log("topic | partition | message: ", topic, partition, message.value.toString());
                     try {
-                        switch (topic) {
-                            case process.env.KAFKA_TOPIC_FB:
-                                await handleFacebookService(message);
-                                break;
-                            case process.env.KAFKA_TOPIC_INSTAGRAM:
-                                await handleInstagramService(message);
-                                break;
-                            case process.env.KAFKA_TOPIC_INSTAGRAM:
-                                await handleZlService(message);
-                                break;
-                            default:
-                                throw new Error("Unhandle topic", topic, message);
+                        if (this.handlers[topic]) {
+                            this.handlers[topic].handle(message);
+                        } else {
+                            throw new Error(`Topic: ${topic} handler not founded`);
                         }
                     } catch (e) {
                         console.error(e);

@@ -1,101 +1,14 @@
-import {FB_MESSAGE, MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_FB, PLATFORM_IG, TICKET_TYPE_MESSAGE} from "../appConst";
-import {createConversationId} from "../appHelper";
-import {updateOrCreateCustomer} from "./CustomerService";
-import {findMessageByMid, lockAndUpdateMessage, updateOrCreateMessage, updateRead} from "./MessageService";
-import {createRawData} from "./RawService";
-import {updateOrCreateTicket} from "./TicketService";
+import {findMessageByMid, lockAndUpdateMessage, updateOrCreateMessage} from "../../services/MessageService";
+import {updateOrCreateCustomer} from "../../services/CustomerService";
+import {updateOrCreateTicket} from "../../services/TicketService";
+import {MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_FB, TICKET_TYPE_MESSAGE} from "../../appConst";
+import {createConversationId} from "../../appHelper";
 
-export const handleFacebookService = async (message) => {
-    try {
-        const messageString = message.value.toString();
-        //Save raw message
-        const data = JSON.parse(messageString);
-        const {entry} = data;
-        entry.forEach(item => {
-            const {id, time, messaging} = item;
-            //TODO hop_context
-
-            handleMessagingArray(id, time, messaging);
-        });
-    } catch (e) {
-        throw e;
-    }
-};
-
-/**
- * @param {string} id
- * @param {number} time
- * @param {any} messaging
- * */
-const handleMessagingArray = (id, time, messaging) => {
-    try {
-        messaging.forEach(item => {
-            handleMessage(id, time, item)
-                .catch(e => {
-                    console.error(e);
-                });
-        })
-    } catch (e) {
-        console.error(e);
-        //TODO Handle exception here
-    }
-};
-
-/**
- * @param {string} id
- * @param {number} time
- * @param {any} messaging
- * */
-const handleMessage = async (id, time, messaging) => {
-    try {
-        const {message, postback, reaction, read} = messaging;
-
-        //Truong hop reaction
-        if (reaction) {
-            await handleReaction(messaging);
-        }
-
-        //Truong hop messagin seen
-        if (read) {
-            await handleRead(messaging);
-        }
-
-        //Truong hop message type postback
-        if (postback) {
-            const rawMessage = await createRawData(PLATFORM_IG, id, time, IG_POSTBACK, JSON.stringify(messaging));
-            try {
-                await handlePostback(id, messaging);
-            } catch (e) {
-                rawMessage.isError = true;
-                rawMessage.errorMessage = e.message;
-                rawMessage.save();
-            } finally {
-            }
-        }
-
-        //Truong hop xu ly message binh thuong
-        if (message) {
-            let rawMessage = await createRawData(PLATFORM_FB, id, time, FB_MESSAGE, JSON.stringify(messaging));
-            try {
-                const messages = await handleTextAndAttachmentMessage(id, messaging, rawMessage);
-                // rawMessage.messageId = message?.id;
-            } catch (e) {
-                rawMessage.isError = true;
-                rawMessage.errorMessage = e.message;
-                rawMessage.save();
-            } finally {
-            }
-        }
-    } catch (e) {
-        throw e;
-    }
-};
-
-const handlePostback = async (messaging) => {
+export const handlePostback = async (messaging) => {
     //TODO postback
 };
 
-const handleRead = async (messaging) => {
+export const handleRead = async (messaging) => {
     // try {
     //     //Todo lock mid
     //     const {sender, read} = messaging;
@@ -107,7 +20,7 @@ const handleRead = async (messaging) => {
     // }
 };
 
-const handleReaction = async (messaging) => {
+export const handleReaction = async (messaging) => {
     //Todo lock mid
     const {sender, reaction} = messaging;
     const {mid, action, emoji} = reaction;
@@ -165,7 +78,7 @@ const handleReaction = async (messaging) => {
     }
 };
 
-const handleTextAndAttachmentMessage = async (platformId, messaging, rawMessage) => {
+export const handleTextAndAttachmentMessage = async (platformId, messaging, rawMessage) => {
     const {sender, recipient, timestamp, message} = messaging;
     const {mid, text, attachments, is_echo = false, reply_to, quick_reply} = message;
     //VALIDATE
@@ -183,7 +96,7 @@ const handleTextAndAttachmentMessage = async (platformId, messaging, rawMessage)
     try {
         //TRANSACTION HERE
         const messages = await db.sequelize.transaction(async (t) => {
-            let messages = null;
+            let messages;
             //FIND OR CREATE OPEN TICKET
             const ticket = await updateOrCreateTicket(PLATFORM_FB
                 , platformId

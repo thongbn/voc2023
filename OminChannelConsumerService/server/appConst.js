@@ -5,6 +5,7 @@ export const PLATFORM_ZL = "zl";
 export const IG_POSTBACK = "postback";
 export const IG_MESSAGE = "message";
 
+export const FB_POSTBACK = "postback";
 export const FB_MESSAGE = "message";
 
 //TICKET CONSTANTS
