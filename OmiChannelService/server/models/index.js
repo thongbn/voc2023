@@ -20,7 +20,7 @@ sequelize = new Sequelize({
 });
 
 const db = {
-    // User: require(path.join(__dirname, "user"))(sequelize, Sequelize.DataTypes),
+    User: require("./User")(sequelize, Sequelize.DataTypes),
     Setting: require("./Setting")(sequelize, Sequelize.DataTypes),
     RawData: require("./RawData")(sequelize, Sequelize.DataTypes),
     Message: require("./Message")(sequelize, Sequelize.DataTypes),

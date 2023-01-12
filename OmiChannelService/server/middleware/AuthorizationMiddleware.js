@@ -7,17 +7,13 @@ const AuthorizationMiddleware = (req, res, next) => {
             throw new createError(401, "Không có quyền truy cập (1)");
         }
 
-        if(!req.user.role){
+        if (!req.user.role) {
             throw new createError(401, "Không có quyền truy cập (2)");
         }
 
         next();
-    }catch (e) {
-        if(e instanceof TokenExpiredError){
-            next(createError(403, "Không có quyền truy cập (3)"));
-        }else{
-            next(errorHttp(e));
-        }
+    } catch (e) {
+        next(errorHttp(e));
     }
 };
 
