@@ -28,7 +28,7 @@ export default function MenuFooter(props) {
                         <div className="hp-mt-6">
               <span className="hp-d-block hp-text-color-black-100 hp-text-color-dark-0 hp-p1-body"
                     style={{lineHeight: 1}}>
-                  {auth && auth.user && `${auth.user.firstName} ${auth.user.lastName}`}
+                  {auth && auth.user && `${auth.user.name}`}
              </span>
 
                             <Link
