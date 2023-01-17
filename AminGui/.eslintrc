@@ -7,7 +7,6 @@
     "jest": true
   },
   "plugins": ["react", "import", "react-hooks"],
-  "processor": "disable/disable",
   "parserOptions": {
     "ecmaFeatures": {
       "jsx": true
