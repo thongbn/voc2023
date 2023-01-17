@@ -14,10 +14,9 @@ export const getKafkaConfig = async () => {
     return kafka;
 };
 
-export const setOmiConfig = async (settings) => {
+export const setConfig = async (keyName, settingData = {}) => {
     try {
         //Get from redis
-        const keyName = "omi-config";
         //Get settings from db
         let model = await db.Setting.findOne({
             where: {
@@ -29,7 +28,7 @@ export const setOmiConfig = async (settings) => {
                 name: keyName,
             });
         }
-        model.data = JSON.stringify(settings);
+        model.data = JSON.stringify(settingData);
         await model.save();
 
         await redisClient().set(keyName, model.data);
@@ -39,10 +38,9 @@ export const setOmiConfig = async (settings) => {
     }
 };
 
-export const getOmiConfig = async () => {
+export const getConfig = async (keyName, defaultSetting = {}) => {
     try {
         //Get from redis
-        const keyName = "omi-config";
         let settings = await redisClient().get(keyName);
         if (settings) {
             return JSON.parse(settings);
@@ -56,20 +54,6 @@ export const getOmiConfig = async () => {
         });
 
         if (!model) {
-            const defaultSetting = {
-                kafka: {
-                    brokers: process.env.KAFKA_BROKER,
-                    clientId: process.env.KAFKA_CLIENT_ID,
-                }, facebook: {
-                    topic: process.env.KAFKA_TOPIC_FB,
-                    verifyToken: process.env.FACEBOOK_VERIFY_TOKEN,
-                    appSecret: process.env.FACEBOOK_APP_SECRET
-                }, instagram: {
-                    topic: process.env.KAFKA_TOPIC_INSTAGRAM,
-                    verifyToken: process.env.FACEBOOK_VERIFY_TOKEN,
-                    appSecret: process.env.FACEBOOK_APP_SECRET
-                }
-            };
             model = db.Setting.build({
                 name: keyName,
                 data: JSON.stringify(defaultSetting)
@@ -81,4 +65,21 @@ export const getOmiConfig = async () => {
     } catch (e) {
         throw e;
     }
+};
+
+export const getOmiConfig = async () => {
+    return await getConfig("omi-config", {
+        kafka: {
+            brokers: process.env.KAFKA_BROKER,
+            clientId: process.env.KAFKA_CLIENT_ID,
+        }, facebook: {
+            topic: process.env.KAFKA_TOPIC_FB,
+            verifyToken: process.env.FACEBOOK_VERIFY_TOKEN,
+            appSecret: process.env.FACEBOOK_APP_SECRET
+        }, instagram: {
+            topic: process.env.KAFKA_TOPIC_INSTAGRAM,
+            verifyToken: process.env.FACEBOOK_VERIFY_TOKEN,
+            appSecret: process.env.FACEBOOK_APP_SECRET
+        }
+    })
 };

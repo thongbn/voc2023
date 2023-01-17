@@ -18,43 +18,43 @@ const pages = [
         title: <IntlMessages id="sidebar-pages-case"/>,
         icon: <Calendar size={18}/>,
         navLink: "/case",
-        children: [
-            {
-                id: "case-all",
-                title: <IntlMessages id="all"/>,
-                navLink: "/case",
-            },
-            {
-                id: "case-inbox",
-                title: <IntlMessages id="inbox"/>,
-                navLink: "/case/inbox",
-            },
-            {
-                id: "case-rating",
-                title: <IntlMessages id="rating"/>,
-                navLink: "/case/rating",
-            },
-            {
-                id: "case-feedback",
-                title: <IntlMessages id="feedback"/>,
-                navLink: "/case/feedback",
-            },
-            {
-                id: "case-custom",
-                title: <IntlMessages id="custom"/>,
-                navLink: "/case/custom",
-            },
-            {
-                id: "case-miss",
-                title: <IntlMessages id="miss"/>,
-                navLink: "/case/rating",
-            },
-            {
-                id: "case-post-comment",
-                title: <IntlMessages id="post-comment"/>,
-                navLink: "/case/post-comment",
-            },
-        ]
+        // children: [
+        //     {
+        //         id: "case-all",
+        //         title: <IntlMessages id="all"/>,
+        //         navLink: "/case",
+        //     },
+        //     {
+        //         id: "case-inbox",
+        //         title: <IntlMessages id="inbox"/>,
+        //         navLink: "/case/inbox",
+        //     },
+        //     {
+        //         id: "case-rating",
+        //         title: <IntlMessages id="rating"/>,
+        //         navLink: "/case/rating",
+        //     },
+        //     {
+        //         id: "case-feedback",
+        //         title: <IntlMessages id="feedback"/>,
+        //         navLink: "/case/feedback",
+        //     },
+        //     {
+        //         id: "case-custom",
+        //         title: <IntlMessages id="custom"/>,
+        //         navLink: "/case/custom",
+        //     },
+        //     {
+        //         id: "case-miss",
+        //         title: <IntlMessages id="miss-case"/>,
+        //         navLink: "/case/miss-case",
+        //     },
+        //     {
+        //         id: "case-post-comment",
+        //         title: <IntlMessages id="post-comment"/>,
+        //         navLink: "/case/post-comment",
+        //     },
+        // ]
     },
     {
         id: "customer",

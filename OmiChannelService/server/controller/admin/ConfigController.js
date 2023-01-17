@@ -1,6 +1,7 @@
 import {BaseController} from "../BaseController";
 import db from "../../models";
-import {getOmiConfig, setOmiConfig} from "../../services/ConfigService";
+import {getOmiConfig, setConfig, setOmiConfig} from "../../services/ConfigService";
+import createError from "http-errors";
 
 export default class ConfigController extends BaseController {
     constructor() {
@@ -9,23 +10,51 @@ export default class ConfigController extends BaseController {
 
     initRouter() {
         super.initRouter();
-        this.getRouter().get('/omi-config', this.index.bind(this));
-        this.getRouter().post('/omi-config', this.update.bind(this));
+        this.getRouter().get('/', this.index.bind(this));
+        this.getRouter().post('/:key', this.update.bind(this));
+        this.getRouter().get('/omi-config', this.omiConfig.bind(this));
+        this.getRouter().post('/omi-config', this.updateOmiConfig.bind(this));
         this.getRouter().post('/migrate-db', this.migrateDb.bind(this));
     }
 
     async index(req, res, next) {
-        try{
+        try {
             const settings = await getOmiConfig();
             return res.json({
                 data: settings,
             })
-        }catch (e) {
+        } catch (e) {
             next(e);
         }
     }
 
     async update(req, res, next) {
+        try {
+            const {key, data} = req.body;
+            if(!key && !data){
+                throw new createError(400, "Dư liệu không đủ");
+            }
+            const settings = await setConfig(key, data);
+            return res.json({
+                data: settings,
+            })
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    async omiConfig(req, res, next) {
+        try {
+            const settings = await getOmiConfig();
+            return res.json({
+                data: settings,
+            })
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    async updateOmiConfig(req, res, next) {
         const {
             kafka = {
                 brokers: process.env.KAFKA_BROKER,
@@ -42,16 +71,16 @@ export default class ConfigController extends BaseController {
                 pageId: process.env.INSTAGRAM_ACC_ID
             }
         } = req.body;
-        try{
-            const settings = await setOmiConfig({
+        try {
+            const settings = await setConfig("omi-config", {
                 kafka,
                 facebook,
                 instagram
             });
             return res.json({
                 data: settings,
-            })
-        }catch (e) {
+            });
+        } catch (e) {
             next(e);
         }
     }

@@ -18,26 +18,26 @@ export default function HeaderText() {
             lg={14}
             className="hp-header-left-text hp-d-flex-center"
         >
-            <div className="hp-border-radius-xl hp-overflow-hidden hp-bg-black-0 hp-bg-dark-100 hp-d-flex hp-mr-12"
-                 style={{minWidth: 45, width: 45, height: 45}}>
-                <img src={image} alt="Newspaper" height="80%" style={{marginTop: 'auto', marginLeft: 'auto'}}/>
-            </div>
+            {/*<div className="hp-border-radius-xl hp-overflow-hidden hp-bg-black-0 hp-bg-dark-100 hp-d-flex hp-mr-12"*/}
+            {/*     style={{minWidth: 45, width: 45, height: 45}}>*/}
+            {/*    <img src={image} alt="Newspaper" height="80%" style={{marginTop: 'auto', marginLeft: 'auto'}}/>*/}
+            {/*</div>*/}
 
-            <Input.Group compact size={"small"}>
-                <Input
-                    readOnly
-                    addonBefore={"Link giới thiệu"}
-                    style={{width: 'calc(100% - 200px)'}}
-                    defaultValue={referenceLink}
-                />
-                <Tooltip title="Sao chép">
-                    <Button
-                        onClick={() => {
-                            navigator.clipboard.writeText(referenceLink)
-                        }}
-                        size={"small"} icon={<RiFileCopy2Fill/>}/>
-                </Tooltip>
-            </Input.Group>
+            {/*<Input.Group compact size={"small"}>*/}
+            {/*    <Input*/}
+            {/*        readOnly*/}
+            {/*        addonBefore={"Link giới thiệu"}*/}
+            {/*        style={{width: 'calc(100% - 200px)'}}*/}
+            {/*        defaultValue={referenceLink}*/}
+            {/*    />*/}
+            {/*    <Tooltip title="Sao chép">*/}
+            {/*        <Button*/}
+            {/*            onClick={() => {*/}
+            {/*                navigator.clipboard.writeText(referenceLink)*/}
+            {/*            }}*/}
+            {/*            size={"small"} icon={<RiFileCopy2Fill/>}/>*/}
+            {/*    </Tooltip>*/}
+            {/*</Input.Group>*/}
         </Col>
     );
 };

@@ -83,35 +83,35 @@ export default function MenuHeader(props) {
           <Row align="middle">
             <HeaderLanguages />
 
-            <Col className="hp-d-flex-center">
-              {!searchHeader ? (
-                <Button
-                  ghost
-                  type="primary"
-                  className="hp-border-none hp-hover-bg-black-10 hp-hover-bg-dark-100"
-                  icon={
-                    <SearchNormal1
-                      set="curved"
-                      className="hp-text-color-black-80 hp-text-color-dark-30"
-                    />
-                  }
-                  onClick={() => searchClick()}
-                />
-              ) : (
-                <Button
-                  ghost
-                  type="primary"
-                  className="hp-border-none hp-hover-bg-black-10 hp-hover-bg-dark-100"
-                  icon={
-                    <RiCloseLine
-                      size={24}
-                      className="hp-text-color-black-80 hp-text-color-dark-30"
-                    />
-                  }
-                  onClick={() => setSearchHeader(false)}
-                />
-              )}
-            </Col>
+            {/*<Col className="hp-d-flex-center">*/}
+            {/*  {!searchHeader ? (*/}
+            {/*    <Button*/}
+            {/*      ghost*/}
+            {/*      type="primary"*/}
+            {/*      className="hp-border-none hp-hover-bg-black-10 hp-hover-bg-dark-100"*/}
+            {/*      icon={*/}
+            {/*        <SearchNormal1*/}
+            {/*          set="curved"*/}
+            {/*          className="hp-text-color-black-80 hp-text-color-dark-30"*/}
+            {/*        />*/}
+            {/*      }*/}
+            {/*      onClick={() => searchClick()}*/}
+            {/*    />*/}
+            {/*  ) : (*/}
+            {/*    <Button*/}
+            {/*      ghost*/}
+            {/*      type="primary"*/}
+            {/*      className="hp-border-none hp-hover-bg-black-10 hp-hover-bg-dark-100"*/}
+            {/*      icon={*/}
+            {/*        <RiCloseLine*/}
+            {/*          size={24}*/}
+            {/*          className="hp-text-color-black-80 hp-text-color-dark-30"*/}
+            {/*        />*/}
+            {/*      }*/}
+            {/*      onClick={() => setSearchHeader(false)}*/}
+            {/*    />*/}
+            {/*  )}*/}
+            {/*</Col>*/}
 
             <HeaderNotifications />
 
