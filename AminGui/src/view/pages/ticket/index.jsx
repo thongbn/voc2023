@@ -1,97 +1,120 @@
-import React, {useEffect, useMemo, useState} from "react";
-import {useLocation, useHistory} from 'react-router-dom';
-import {Card, Form, Space} from "antd";
+import React, { useEffect, useMemo, useState } from "react";
+import { useLocation, useHistory } from 'react-router-dom';
+import { Card, Form, Space } from "antd";
 import IntlMessages from "../../../layout/components/lang/IntlMessages";
 import TicketFilter from "./TicketFilter";
 import moment from "moment";
+import TicketList from "./TicketList";
+import qs from "qs";
 
 const Page = () => {
-    const {search} = useLocation();
+    const { search } = useLocation();
     const history = useHistory();
-    const params = useMemo(() => new URLSearchParams(search), [search]);
-    const [activeKey, setActiveKey] = useState(params.get("tab"));
+    const [activeKey, setActiveKey] = useState(null);
     const [filterForm] = Form.useForm();
+    const [currentQuery, setCurrentQuery] = useState(null);
 
     const onSubmitFilter = (values) => {
         console.log(values);
+        const query = {
+            ...currentQuery,
+            ...values,
+            page: 1,
+        };
+        history.push(`/case?${qs.stringify(query)}`);
     };
 
     const onTabChange = (key) => {
-        history.push(`/case?tab=${key}`);
+        const query = {
+            ...currentQuery,
+            type: key,
+            page: 1,
+        };
+        history.push(`/case?${qs.stringify(query)}`);
     };
 
+    const onChangePage = (page) => {
+        const query = {
+            ...currentQuery,
+            page: page,
+        };
+        history.push(`/case?${qs.stringify(query)}`);
+    }
+
     useEffect(() => {
-        setActiveKey(params.has("tab") ? params.get("tab") : "all");
+        const params = qs.parse(search, { ignoreQueryPrefix: true });
+        setActiveKey(params.type ? params.type : "");
         filterForm.setFields([
             {
                 name: "type",
-                value: params.has("tab") ? params.get("tab") : null
+                value: params["type"] ? params["type"] : null
+            },
+            {
+                name: "platform",
+                value: params["platform"] ? params["platform"] : null
             },
             {
                 name: "id",
-                value: params.has("id") ? params.get("id") : null
+                value: params["id"] ? params["id"] : null
             },
             {
                 name: "status",
-                value: params.has("status") ? params.get("status") : null
+                value: params["status"] ? params["status"] : null
             },
             {
                 name: "createdAt",
-                value: params.has("createdAt") ? moment(params.get("createdAt")) : moment()
+                value: params["createdAt"] ? moment(params["createdAt"]) : null
             },
             {
                 name: "tags",
-                value: params.has("tags") ? params.get("tags").split(",") : []
+                value: params["tags"] ? params["tags"] : []
             },
         ]);
-    }, [params]);
+        setCurrentQuery({
+            ...params
+        });
+    }, [search]);
 
     const tabList = [
         {
-            key: "all",
-            tab: <IntlMessages id="all"/>,
+            key: "",
+            tab: <IntlMessages id="all" />,
         },
         {
             key: "inbox",
-            tab: <IntlMessages id="inbox"/>,
+            tab: <IntlMessages id="inbox" />,
         },
         {
             key: "rating",
-            tab: <IntlMessages id="rating"/>,
+            tab: <IntlMessages id="rating" />,
         },
         {
             key: "custom",
-            tab: <IntlMessages id="custom"/>,
+            tab: <IntlMessages id="custom" />,
         },
         {
-            key: "feed-back",
-            tab: <IntlMessages id="feedback"/>,
+            key: "feedback",
+            tab: <IntlMessages id="feedback" />,
         },
         {
             key: "post-comment",
-            tab: <IntlMessages id="post-comment"/>,
+            tab: <IntlMessages id="post-comment" />,
         },
     ];
-
-    const contentList = {
-        article: <p>article content</p>,
-        app: <p>app content</p>,
-        project: <p>project content</p>,
-    };
 
     return (
         <Card
             tabList={tabList}
-            tabProps={{size: "small"}}
+            tabProps={{ size: "small" }}
             activeTabKey={activeKey}
             size={"small"}
             onTabChange={(key) => {
                 onTabChange(key);
             }}
         >
-            <Space size="small">
-                <TicketFilter form={filterForm} onSubmit={onSubmitFilter}/>
-                {contentList[activeKey]}
+            <Space size="small" direction="vertical" style={{width: "100%"}}>
+                <TicketFilter form={filterForm} onSubmit={onSubmitFilter} />
+                <TicketList query={currentQuery} onChangePage={onChangePage} />
             </Space>
         </Card>
     );

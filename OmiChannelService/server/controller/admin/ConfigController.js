@@ -9,17 +9,18 @@ export default class ConfigController extends BaseController {
     }
 
     initRouter() {
-        super.initRouter();
-        this.getRouter().get('/', this.index.bind(this));
-        this.getRouter().post('/:key', this.update.bind(this));
+        super.initRouter();        
         this.getRouter().get('/omi-config', this.omiConfig.bind(this));
         this.getRouter().post('/omi-config', this.updateOmiConfig.bind(this));
         this.getRouter().post('/migrate-db', this.migrateDb.bind(this));
+        this.getRouter().get('/:key', this.index.bind(this));
+        this.getRouter().post('/:key', this.update.bind(this));
     }
 
     async index(req, res, next) {
         try {
-            const settings = await getOmiConfig();
+            const {key} = req.body;
+            const settings = await getConfig(key);
             return res.json({
                 data: settings,
             })

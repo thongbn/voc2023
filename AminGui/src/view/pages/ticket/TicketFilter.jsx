@@ -10,9 +10,9 @@ const TicketFilter = ({form, onSubmit}) => {
                 <Select placeholder={"Chọn loại"} allowClear>
                     <Select.Option value="inbox">Inbox</Select.Option>
                     <Select.Option value="rating">Rating</Select.Option>
-                    <Select.Option value="feedback">Custom</Select.Option>
+                    <Select.Option value="custom">Custom</Select.Option>
                     <Select.Option value="feedback">Feedback</Select.Option>
-                    <Select.Option value="comment">Comment</Select.Option>
+                    <Select.Option value="post-comment">Comment</Select.Option>
                 </Select>
             </Form.Item>
             <Form.Item name="id">

@@ -6,6 +6,7 @@ import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
 import store from './redux/store'
 
+import "./styles/app.scss";
 import "./assets/icons/remixicon.css";
 import "./assets/less/yoda-theme.less";
 

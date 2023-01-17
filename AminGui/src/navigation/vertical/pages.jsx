@@ -83,32 +83,32 @@ const pages = [
             {
                 id: "faq",
                 title: <IntlMessages id="faq"/>,
-                navLink: "/faq",
+                navLink: "/settings/faq",
             },
             {
                 id: "tag-keyword",
                 title: <IntlMessages id="tag"/>,
-                navLink: "/tag",
+                navLink: "/settings/tag",
             },
             {
                 id: "auto-answer",
                 title: <IntlMessages id="auto-answer"/>,
-                navLink: "/auto-answer",
+                navLink: "/settings/auto-answer",
             },
             {
                 id: "bot",
                 title: <IntlMessages id="bot"/>,
-                navLink: "/auto-bot",
+                navLink: "/settings/auto-bot",
             },
             {
                 id: "template",
                 title: <IntlMessages id="template"/>,
-                navLink: "/template",
+                navLink: "/settings/template",
             },
             {
                 id: "other-settings",
                 title: <IntlMessages id="other"/>,
-                navLink: "/other",
+                navLink: "/settings/other",
             },
         ]
     },
