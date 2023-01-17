@@ -8,6 +8,11 @@ const IndexRoutes = [
         layout: "VerticalLayout",
     },
     {
+        path: "/case/:id",
+        component: lazy(() => import("../../view/pages/ticket/detail")),
+        layout: "VerticalLayout",
+    },
+    {
         path: "/case",
         component: lazy(() => import("../../view/pages/ticket")),
         layout: "VerticalLayout",
