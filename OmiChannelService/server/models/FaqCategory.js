@@ -21,11 +21,11 @@ module.exports = (sequelize) => {
          */
         static associate(models) {
             // define association here
-            // FaqCategory.hasOne(models.Customer, {
-            //     foreignKey: "id",
-            //     sourceKey: "customerId",
-            //     as: "customer"
-            // });
+            FaqCategory.hasMany(models.Faq, {
+                sourceKey: "id",
+                foreignKey: "category_id",
+                as: "faqs"
+            });
         }
     }
 

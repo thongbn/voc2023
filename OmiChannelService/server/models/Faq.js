@@ -21,11 +21,11 @@ module.exports = (sequelize) => {
          */
         static associate(models) {
             // define association here
-            // Faq.hasOne(models.Customer, {
-            //     foreignKey: "id",
-            //     sourceKey: "customerId",
-            //     as: "customer"
-            // });
+            Faq.hasOne(models.FaqCategory, {
+                foreignKey: "id",
+                sourceKey: "category_id",
+                as: "faqCategory"
+            });
         }
     }
 
@@ -37,7 +37,7 @@ module.exports = (sequelize) => {
         active: DataTypes.STRING(25),
         en_title: DataTypes.STRING,
         en_content: DataTypes.TEXT,
-        button_id: DataTypes.STRING(25),
+        button_id: DataTypes.STRING,
         created_at: DataTypes.INTEGER.UNSIGNED,
         updated_at: DataTypes.INTEGER.UNSIGNED,
     }, {

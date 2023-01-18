@@ -48,11 +48,11 @@ module.exports = (sequelize) => {
     }, {
         sequelize,
         modelName: 'BotScriptButton',
-        tableName: "bot_script",
+        tableName: "bot_script_button",
         timestamps: false,
         indexes: [
             {
-                name: "platform",
+                name: "platform_idx",
                 fields: ['platform', 'platformId']
             }
         ]

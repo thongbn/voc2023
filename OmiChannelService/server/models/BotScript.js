@@ -33,7 +33,11 @@ module.exports = (sequelize) => {
         title: DataTypes.TEXT,
         parent: DataTypes.INTEGER,
         type: DataTypes.STRING(100),
-        unique_id: DataTypes.STRING,
+        unique_id: {
+            type: DataTypes.STRING,
+            unique: true,
+            allowNull: false
+        },
         is_persisted: DataTypes.SMALLINT,
         created_at: DataTypes.INTEGER.UNSIGNED,
         updated_at: DataTypes.INTEGER.UNSIGNED,
@@ -42,12 +46,6 @@ module.exports = (sequelize) => {
         modelName: 'BotScript',
         tableName: "bot_script",
         timestamps: false,
-        indexes: [
-            {
-                name: "unique_id",
-                fields: ['unique_id']
-            }
-        ]
     });
 
     return BotScript;
