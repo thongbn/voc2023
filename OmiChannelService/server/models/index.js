@@ -40,6 +40,7 @@ const db = {
     TagVoc: require("./TagVoc")(sequelize, Sequelize.DataTypes),
     Template: require("./Template")(sequelize, Sequelize.DataTypes),
     TemplateCategory: require("./TemplateCategory")(sequelize, Sequelize.DataTypes),
+    MediaManager: require("./MediaManager")(sequelize, Sequelize.DataTypes),
     // Post: require("./Post")(sequelize, Sequelize.DataTypes),
 };
 
