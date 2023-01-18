@@ -15,10 +15,17 @@ const TicketFilter = ({form, onSubmit}) => {
                     <Select.Option value="post-comment">Comment</Select.Option>
                 </Select>
             </Form.Item>
+            <Form.Item name="platform">
+                <Select placeholder={"Chọn hệ thống"} allowClear>
+                    <Select.Option value="ig">Instagram</Select.Option>
+                    <Select.Option value="fb">Facebook</Select.Option>
+                    <Select.Option value="zl">Zalo</Select.Option>
+                </Select>
+            </Form.Item>
             <Form.Item name="id">
                 <Input string={""} placeholder={"#Id"}/>
             </Form.Item>
-            <Form.Item name="status">
+            <Form.Item name="caseStatus">
                 <Select placeholder={"Trạng thái"} allowClear>
                     <Select.Option value="1_new">New</Select.Option>
                     <Select.Option value="2_inProgress">In progress</Select.Option>

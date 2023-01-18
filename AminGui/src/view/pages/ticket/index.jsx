@@ -19,6 +19,7 @@ const Page = () => {
         const query = {
             ...currentQuery,
             ...values,
+            createdAt: values.createdAt?.toDate() || null,
             page: 1,
         };
         history.push(`/case?${qs.stringify(query)}`);
@@ -39,7 +40,7 @@ const Page = () => {
             page: page,
         };
         history.push(`/case?${qs.stringify(query)}`);
-    }
+    };
 
     useEffect(() => {
         const params = qs.parse(search, { ignoreQueryPrefix: true });
@@ -58,8 +59,8 @@ const Page = () => {
                 value: params["id"] ? params["id"] : null
             },
             {
-                name: "status",
-                value: params["status"] ? params["status"] : null
+                name: "caseStatus",
+                value: params["caseStatus"] ? params["caseStatus"] : null
             },
             {
                 name: "createdAt",

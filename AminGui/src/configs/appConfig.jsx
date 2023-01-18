@@ -1,3 +1,6 @@
+import {RiInstagramLine, RiFacebookLine, RiSendPlaneLine} from "react-icons/ri";
+import React from "react";
+
 export const APPOINTMENT_STATUS = {
     NEW: "1_new",
     IN_PROGRESS: "2_in_progress",
@@ -49,5 +52,20 @@ export const TRANS_PAID_STATUS = {
     "3_cancel": {
         name: "Hủy",
         color: "default"
+    },
+};
+
+export const PLATFORMS = {
+    "ig": {
+        name: "Instagram",
+        icon: <RiInstagramLine className="remix-icon"/>
+    },
+    "fb": {
+        name: "Hoàn thành",
+        icon: <RiFacebookLine className="remix-icon"/>
+    },
+    "zl": {
+        name: "Zalo",
+        color: <RiSendPlaneLine  className="remix-icon"/>
     },
 };

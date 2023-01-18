@@ -1,7 +1,16 @@
-import { Skeleton, Spin, Table } from "antd";
-import React, { memo, useEffect, useState } from "react";
+import {message, Button, Skeleton, Table, Space, Typography} from "antd";
+import React, {memo, useEffect, useState} from "react";
+import moment from "moment";
+import ApiHelper from "../../../utils/ApiHelper";
+import {useHistory} from 'react-router-dom';
+import {formatDate} from "../../../utils/StringHelper";
+import {renderPlatformIcon} from "../../../utils/AppRenderHelper";
+import qs from 'qs';
 
-const TicketList = ({ query, onChangePage }) => {
+const {Paragraph, Link} = Typography;
+
+const TicketList = ({query, onChangePage}) => {
+    const history = useHistory();
     const [loading, setLoading] = useState(false);
     const [dataList, setDataList] = useState({
         data: [],
@@ -13,47 +22,39 @@ const TicketList = ({ query, onChangePage }) => {
 
     useEffect(() => {
         searchModels(query);
-    }, [query])
+    }, [query]);
+
+    const onOpenDetail = (id) => {
+        history.push(`/case/${id}`);
+    };
 
     const columns = [
         {
-            key: "type",
-            title: "Type",
-            dataIndex: "type",
-            render: (text) => <p>{text}</p>,
+            key: "platform",
+            title: "Platform",
+            dataIndex: "platform",
+            render: (text, row) => <Typography.Text>
+                <Link onClick={() => onOpenDetail(row.id)}>#{row.id}</Link> {renderPlatformIcon(text)} {row.type}
+            </Typography.Text>,
         },
         {
-            key: "id",
-            title: "Mã",
-            dataIndex: "id",
-            render: (text, row) => <Button onClick={() => onOpenDetail(row)} type="link">#{text}</Button>,
-        },
-        {
-            key: "message",
+            key: "firstMessage",
             title: "Message",
-            dataIndex: "message",
+            dataIndex: "firstMessage",
             render: (text, row) => {
-                return <p><small>{text}</small></p>
+                return (
+                    <Typography>
+                        <Paragraph>
+                            {text}
+                        </Paragraph>
+                    </Typography>
+                )
             },
         },
         {
-            key: "customer",
-            title: "Khách hàng",
-            dataIndex: "customer",
-            render: (text) => <p>{text}</p>,
-        },
-        {
-            key: "tags",
-            title: "Tags",
-            dataIndex: "tags",
-            render: (text, row) => {
-                return <Space></Space>
-            },
-        },
-        {
-            key: "status",
+            key: "caseStatus",
             title: "Trạng thái",
-            dataIndex: "status",
+            dataIndex: "caseStatus",
             render: (text) => <p>{text}</p>,
         },
         {
@@ -81,22 +82,30 @@ const TicketList = ({ query, onChangePage }) => {
             }
             console.log("Get Ticket", query);
             setLoading(true);
-            // console.log(query);
+            console.log(query);
             // //Preload query
-            // const formatQuery = {
-            //     id: query.id,
-            //     email: query.appointmentId,
-            //     phone: query.paidStatus,
-            //     page
-            // };
+            const formatQuery = {
+                id: query.id || null,
+                platform: query.platform || null,
+                customerId: query.customerId || null,
+                createdAt: query.createdAt ?
+                    `between: ${moment(query.createdAt).format('YYYY-MM-DD 00:00:00')},${moment(query.createdAt).format('YYYY-MM-DD 23:59:59')}`
+                    : null,
+                tags: query.tags ? `in:${query.tags.join(",")}` : null,
+                page: query.page,
+                sort: "-createdAt"
+            };
 
-            // console.log(formatQuery);
 
-            // const res = await ApiHelper().get("/members", {
-            //     params: formatQuery
-            // });
-            // console.log(res.data);
-            // setDataList(res.data);
+            const q  = qs.stringify(formatQuery, {
+                    encodeValuesOnly: true,
+                    skipNulls: true
+                }
+            );
+
+            const res = await ApiHelper().get(`/tickets?${q}`);
+            console.log(res.data);
+            setDataList(res.data);
         } catch (e) {
             await message.error(e.message);
         } finally {
@@ -107,21 +116,20 @@ const TicketList = ({ query, onChangePage }) => {
     return (
         <Skeleton active={true} loading={loading}>
             <Table columns={columns}
-                dataSource={dataList.data}
-                size="small"
-                scroll={{ x: 500 }}
-                key={"tbl"}
-                pagination={
-                    {
-                        pageSize: dataList.pagination.limit,
-                        current: dataList.pagination.page,
-                        onChange: onChangePage,
-                    }
-                }
-            >
-            </Table>
+                   dataSource={dataList.data}
+                   size="small"
+                   scroll={{x: 500}}
+                   rowKey={"tbl"}
+                   pagination={
+                       {
+                           pageSize: dataList.pagination.limit,
+                           current: dataList.pagination.page,
+                           onChange: onChangePage,
+                       }
+                   }
+            />
         </Skeleton>
     )
-}
+};
 
 export default memo(TicketList);
