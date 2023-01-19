@@ -4,7 +4,6 @@ const {
     DataTypes
 } = require('sequelize');
 
-import db from "./index";
 
 module.exports = (sequelize) => {
     class Message extends Model {

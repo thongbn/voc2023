@@ -5,7 +5,6 @@ const {
     Sequelize
 } = require('sequelize');
 
-import db from "./index";
 
 /**
  *
@@ -13,7 +12,7 @@ import db from "./index";
  * @returns {FaqTagKeyCategory}
  */
 module.exports = (sequelize) => {
-    class FaqTagKeyCategory extends Model {
+    class TagCategory extends Model {
         /**
          * Helper method for defining associations.
          * This method is not a part of Sequelize lifecycle.
@@ -21,15 +20,15 @@ module.exports = (sequelize) => {
          */
         static associate(models) {
             // define association here
-            // FaqTagKeyCategory.hasOne(models.Customer, {
-            //     foreignKey: "id",
-            //     sourceKey: "customerId",
-            //     as: "customer"
-            // });
+            TagCategory.hasMany(models.TagVoc, {
+                foreignKey: "category_id",
+                sourceKey: "id",
+                as: "tags"
+            });
         }
     }
 
-    FaqTagKeyCategory.init({
+    TagCategory.init({
         name: DataTypes.TEXT,
         en_name: DataTypes.TEXT,
         thumb_url: DataTypes.STRING,
@@ -39,10 +38,10 @@ module.exports = (sequelize) => {
         updated_at: DataTypes.INTEGER.UNSIGNED,
     }, {
         sequelize,
-        modelName: 'FaqTagKeyCategory',
-        tableName: "faq_tagkey_category",
+        modelName: 'TagCategory',
+        tableName: "tag_category",
         timestamps: false,
     });
 
-    return FaqTagKeyCategory;
+    return TagCategory;
 };

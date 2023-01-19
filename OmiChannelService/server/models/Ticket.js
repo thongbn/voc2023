@@ -4,7 +4,6 @@ const {
     DataTypes
 } = require('sequelize');
 
-import db from "./index";
 
 module.exports = (sequelize) => {
     class Ticket extends Model {
@@ -20,6 +19,12 @@ module.exports = (sequelize) => {
                 sourceKey: "customerId",
                 as: "customer"
             });
+
+            Ticket.hasMany(models.Message, {
+                foreignKey: "ticketId",
+                sourceKey: "id",
+                as: "messages"
+            })
         }
     }
 
@@ -41,6 +46,7 @@ module.exports = (sequelize) => {
         vocNote: DataTypes.TEXT,
         vocNoteEn: DataTypes.TEXT,
         userClose: DataTypes.INTEGER.UNSIGNED,
+        userNote: DataTypes.JSON,
         closedDate: "TIMESTAMP"
     }, {
         sequelize,

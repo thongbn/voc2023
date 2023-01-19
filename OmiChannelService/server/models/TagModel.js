@@ -5,8 +5,6 @@ const {
     Sequelize
 } = require('sequelize');
 
-import db from "./index";
-
 /**
  *
  * @param {Sequelize} sequelize
@@ -21,11 +19,11 @@ module.exports = (sequelize) => {
          */
         static associate(models) {
             // define association here
-            // TagModel.hasOne(models.Customer, {
-            //     foreignKey: "id",
-            //     sourceKey: "customerId",
-            //     as: "customer"
-            // });
+            TagModel.hasOne(models.TagVoc, {
+                foreignKey: "id",
+                sourceKey: "tag_id",
+                as: "tag"
+            });
         }
     }
 

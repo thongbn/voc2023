@@ -5,7 +5,6 @@ const {
     Sequelize
 } = require('sequelize');
 
-import db from "./index";
 
 /**
  *

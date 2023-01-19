@@ -2,10 +2,11 @@ import {BaseController} from "../BaseController";
 import db from "../../models";
 import queryStringConverter from "sequelize-querystring-converter";
 import {paginationDataResult, paginationQuery} from "../../helper/queryHelper";
+import {Op} from "sequelize";
 
 export default class TemplateController extends BaseController {
     constructor() {
-        super("/template");
+        super("/templates");
     }
 
     initRouter() {
@@ -16,33 +17,45 @@ export default class TemplateController extends BaseController {
 
     async index(req, res, next) {
         try {
-            // const {query} = req;
-            // const queryObj = queryStringConverter.convert({
-            //     query: {
-            //         ...query,
-            //     },
-            //     basedProperties: [
-            //         'platform',
-            //         'id',
-            //         'caseStatus',
-            //         'customerId',
-            //         'type',
-            //         'createdAt',
-            //         'tags'
-            //     ]
-            // });
-            // const criteria = paginationQuery(queryObj, req);
-            // const models = await db.Ticket.findAll({
-            //     ...criteria,
-            //     include: [
-            //         {
-            //             model: db.Customer,
-            //             attributes: ["id", 'fullname', "avatar", "phone", "email"],
-            //             as: "customer"
-            //         }
-            //     ]
-            // });
-            // return res.json(paginationDataResult(models, req));
+            const {query} = req;
+            let queryObj = queryStringConverter.convert({
+                query: {
+                    ...query,
+                },
+                basedProperties: [
+                    'id',
+                    'title'
+                ]
+            });
+
+            if (query.s) {
+                queryObj = {
+                    where: {
+                        [Op.or]: [
+                            {
+                                id: query.s
+                            },
+                            {
+                                title: {
+                                    [Op.like]: `${query.s}%`
+                                }
+                            },
+                            {
+                                content: {
+                                    [Op.like]: `${query.s}%`
+                                }
+                            }
+                        ],
+                    },
+                    attributes: ['id', 'content']
+                };
+            }
+
+            const criteria = paginationQuery(queryObj, req);
+            const models = await db.Template.findAll({
+                ...criteria
+            });
+            return res.json(paginationDataResult(models, req));
         } catch (e) {
             next(e);
         }

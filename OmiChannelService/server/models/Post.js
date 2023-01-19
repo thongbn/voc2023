@@ -5,7 +5,6 @@ const {
     DataTypes
 } = require('sequelize');
 
-import db from "./index";
 
 /**
  *
