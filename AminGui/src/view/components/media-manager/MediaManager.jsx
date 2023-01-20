@@ -22,7 +22,7 @@ const validMime = [
     "video/quicktime"
 ];
 
-const MediaManager = ({showSelect = false, onSelectImage}) => {
+const MediaManager = ({showSelect = false, onSelectImage, thumbHeight = 100}) => {
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [file, setFile] = useState(null);
@@ -131,14 +131,14 @@ const MediaManager = ({showSelect = false, onSelectImage}) => {
             case "image/png":
             case "image/jpeg": {
                 return <Image width={"100%"}
-                              height={150}
+                              height={thumbHeight}
                               src={process.env.REACT_APP_RESOURCE_URL + item.path}/>;
             }
             case "application/pdf": {
                 return <div className="hp-d-flex hp-d-flex-column hp-align-items-center"
-                            style={{height: "150px"}}
+                            style={{height: `${thumbHeight}px`}}
                 >
-                    <RiFilePdfLine size={80}/>
+                    <RiFilePdfLine size={thumbHeight/2}/>
                     <Typography.Text ellipsis>
                         {item.name}
                     </Typography.Text>
@@ -151,9 +151,9 @@ const MediaManager = ({showSelect = false, onSelectImage}) => {
             case "application/x-mpegURL":
             case "video/quicktime":
                 return <div className="hp-d-flex hp-d-flex-column hp-align-items-center"
-                            style={{height: "150px"}}
+                            style={{height: `${thumbHeight}px`}}
                 >
-                    <RiMovieLine size={80}/>
+                    <RiMovieLine size={thumbHeight/2}/>
                     <Typography.Text ellipsis>
                         {item.name}
                     </Typography.Text>
@@ -161,9 +161,9 @@ const MediaManager = ({showSelect = false, onSelectImage}) => {
                 </div>
             default:
                 return <div className="hp-d-flex hp-d-flex-column hp-align-items-center"
-                            style={{height: "150px"}}
+                            style={{height: `${thumbHeight}px`}}
                 >
-                    <RiFileUnknowLine size={80}/>
+                    <RiFileUnknowLine size={thumbHeight/2}/>
                     <Typography.Text ellipsis>
                         {item.name}
                     </Typography.Text>
@@ -191,7 +191,11 @@ const MediaManager = ({showSelect = false, onSelectImage}) => {
                                             <Button size="small"
                                                     type="primary"
                                                     icon={<RiCheckLine className="remix-icon"/>}
-                                                    onClick={onSelectImage}
+                                                    onClick={() => {
+                                                        if(onSelectImage){
+                                                            onSelectImage(item);
+                                                        }
+                                                    }}
                                                     style={{width: "120px"}}
                                             >
                                                 Select

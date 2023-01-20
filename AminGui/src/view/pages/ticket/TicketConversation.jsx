@@ -1,15 +1,38 @@
-import {Avatar, Button, Form, Comment, Skeleton, Tooltip, List, Input, Space, Select, Row} from "antd";
+import {
+    Avatar,
+    Button,
+    Form,
+    Comment,
+    Skeleton,
+    Tooltip,
+    List,
+    Input,
+    Space,
+    Select,
+    Row,
+    Modal,
+    Image,
+    Typography
+} from "antd";
 import moment from "moment";
 import React, {useEffect, useState, memo} from "react";
-import {RiSendPlaneLine} from "react-icons/ri"
+import {
+    RiSendPlaneLine,
+    RiFilePdfLine,
+    RiMovieLine,
+    RiFileUnknowLine
+} from "react-icons/ri";
+import MediaManager from "../../components/media-manager/MediaManager";
 
 const {TextArea} = Input;
 
 const TicketConversation = ({dataSource, isLoading}) => {
 
     const [form] = Form.useForm();
+    const [selectImgList, setSelectImgList] = useState([]);
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(isLoading);
+    const [mediaLibVisible, setMediaLibVisible] = useState(false);
 
     const CommentForm = () => {
         return (<Form
@@ -29,8 +52,17 @@ const TicketConversation = ({dataSource, isLoading}) => {
                 <TextArea rows={3} placeholder={"Nhập phản hồi"}/>
             </Form.Item>
             <Form.Item>
-                <Space size="small">
-                    <Button type="link" icon={<i className="ri-attachment-2-line"/>}>Add Attachment</Button>
+                <Space size="small" wrap>
+                    <Button type="link"
+                            icon={<i className="ri-attachment-2-line"/>}
+                            onClick={() => setMediaLibVisible(true)}
+                    >
+                        Add Attachment
+                    </Button>
+                    {selectImgList.map(item => {
+                        return renderItem(item);
+                    })}
+
                 </Space>
             </Form.Item>
             <Row justify={"end"}>
@@ -52,6 +84,65 @@ const TicketConversation = ({dataSource, isLoading}) => {
     }, [isLoading]);
 
 
+    const renderItem = (item) => {
+        let previewItem = null;
+        switch (item.mime) {
+            case "image/png":
+            case "image/jpeg": {
+                previewItem = <Image width={50}
+                                     height={50}
+                                     src={process.env.REACT_APP_RESOURCE_URL + item.path}/>;
+                break;
+            }
+            case "application/pdf": {
+                previewItem = <div className="hp-d-flex hp-d-flex-column hp-align-items-center"
+                                   style={{height: "50px", width: "50px"}}
+                >
+                    <RiFilePdfLine size={50}/>
+                    <Typography.Text ellipsis style={{fontSize: '10px'}}>
+                        {item.name}
+                    </Typography.Text>
+                </div>
+                break;
+            }
+            case "video/mp4":
+            case "audio/mp4":
+            case "application/mp4":
+            case "application/x-mpegURL":
+            case "video/quicktime": {
+                previewItem = <div className="hp-d-flex hp-d-flex-column hp-align-items-center"
+                                   style={{height: "50px", width: '50px'}}
+                >
+                    <RiMovieLine size={50}/>
+                    <Typography.Text ellipsis style={{fontSize: '10px'}}>
+                        {item.name}
+                    </Typography.Text>
+                </div>;
+                break;
+            }
+            default:
+                previewItem = <div className="hp-d-flex hp-d-flex-column hp-align-items-center"
+                                   style={{height: "50px", width: "50px"}}
+                >
+                    <RiFileUnknowLine size={50}/>
+                    <Typography.Text ellipsis style={{fontSize: '10px'}}>
+                        {item.name}
+                    </Typography.Text>
+                </div>;
+        }
+
+        return <div className="hp-d-flex hp-d-flex-column hp-align-items-center">
+            {previewItem}
+            <Button size="small"
+                    danger
+                    type="link"
+                    onClick={() => onRemoveImage(item.id)}
+                    style={{marginTop: "4px", fontSize: "10px"}}>
+                Remove
+            </Button>
+        </div>
+    };
+
     const onReplyComment = () => {
 
     };
@@ -63,7 +154,21 @@ const TicketConversation = ({dataSource, isLoading}) => {
 
     const onSelectTemplate = () => {
 
-    }
+    };
+
+    const onSelectImage = (item) => {
+        console.log(item);
+        setSelectImgList([
+            ...selectImgList,
+            item
+        ]);
+        console.log(selectImgList);
+        setMediaLibVisible(false);
+    };
+
+    const onRemoveImage = (id) => {
+        setSelectImgList(selectImgList.filter(item => item.id !== id));
+    };
 
     const fakeData = [
         {
@@ -129,9 +234,19 @@ const TicketConversation = ({dataSource, isLoading}) => {
                     </li>
                 )}
             />
-
+            <Modal title="Media Library"
+                   open={mediaLibVisible}
+                   style={{
+                       maxWidth: "100%",
+                   }}
+                   width={1000}
+                   footer={[]}
+                   onCancel={() => setMediaLibVisible(false)}
+            >
+                <MediaManager showSelect onSelectImage={onSelectImage}/>
+            </Modal>
         </Skeleton>
     )
-}
+};
 
 export default memo(TicketConversation);
