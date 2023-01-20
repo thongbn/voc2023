@@ -2,6 +2,7 @@ import {Award, Calendar, Chart, Setting, Money3, Monitor, People, Document} from
 
 import IntlMessages from "../../layout/components/lang/IntlMessages";
 import React from "react";
+import {Upload} from "react-iconly";
 
 const pages = [
     {
@@ -73,6 +74,12 @@ const pages = [
         title: <IntlMessages id="sidebar-pages-report"/>,
         icon: <Monitor size={18}/>,
         navLink: "/report",
+    },
+    {
+        id: "media-manager",
+        title: <IntlMessages id="sidebar-pages-media-manager"/>,
+        icon: <Upload size={18}/>,
+        navLink: "/media-manager",
     },
     {
         id: "settings",

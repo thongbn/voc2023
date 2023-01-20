@@ -33,13 +33,10 @@ module.exports = (sequelize) => {
         name: DataTypes.STRING,
         hash: DataTypes.STRING,
         path: DataTypes.STRING,
-        created_at: DataTypes.INTEGER.UNSIGNED,
-        updated_at: DataTypes.INTEGER.UNSIGNED,
     }, {
         sequelize,
         modelName: 'MediaManager',
-        tableName: "media_manager",
-        timestamps: false
+        tableName: "media_manager"
     });
 
     return MediaManager;

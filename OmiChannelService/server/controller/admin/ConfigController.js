@@ -88,7 +88,7 @@ export default class ConfigController extends BaseController {
 
     async migrateDb(req, res, next) {
         try {
-            await db.sequelize.sync({alter: true});
+            await db.MediaManager.sync({alter: true});
             return res.json({
                 success: true
             });

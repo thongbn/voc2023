@@ -7,6 +7,7 @@ import createError from 'http-errors';
 import cookieParser from 'cookie-parser';
 import initRouter from './router';
 import cors from 'cors';
+import fileUpload from 'express-fileupload';
 
 const app = express();
 app.use(cors({
@@ -16,6 +17,13 @@ app.use(express.static(`${__dirname}/../public`));
 
 //Special
 app.use(cookieParser());
+app.use(fileUpload({
+    limits: {
+        fileSize: 1048576 * 5
+    },
+    useTempFiles: true,
+    tempFileDir: process.env.TEMP_UPLOAD_PATH
+}));
 app.use(express.json({
     verify: function (req, res, buf, encoding) {
         req.rawBody = buf;

@@ -37,6 +37,11 @@ const IndexRoutes = [
         component: lazy(() => import("../../view/pages/report")),
         layout: "VerticalLayout",
     },
+    {
+        path: "/media-manager",
+        component: lazy(() => import("../../view/pages/media-manager")),
+        layout: "VerticalLayout",
+    },
 ];
 
 export default IndexRoutes;

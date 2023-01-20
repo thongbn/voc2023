@@ -5,6 +5,7 @@ import queryStringConverter from "sequelize-querystring-converter";
 import {paginationDataResult, paginationQuery} from "../../helper/queryHelper";
 import {getTicketById} from "../../services/TicketService";
 import {getTagById, getTagModel, getTagsByModelId} from "../../services/TagService";
+import {CASE_STATUS_DONE, CASE_STATUS_PROCESS} from "../../helper/appConst";
 
 export default class TicketController extends BaseController {
     constructor() {
@@ -22,7 +23,8 @@ export default class TicketController extends BaseController {
         this.getRouter().get('/:id/tags', this.getTags.bind(this));
         this.getRouter().post('/:id/tags', this.addTag.bind(this));
         //Detail
-        this.getRouter().get('/:id/change-status', this.changeCaseStatus.bind(this));
+        this.getRouter().get('/:id/set-inprogress', this.changeProcess.bind(this));
+        this.getRouter().get('/:id/set-done', this.changeDone.bind(this));
         this.getRouter().get('/:id', this.detail.bind(this));
     }
 
@@ -38,11 +40,39 @@ export default class TicketController extends BaseController {
         }
     }
 
-    async changeCaseStatus(req, res, next) {
+    async changeProcess(req, res, next) {
         try {
             const {id} = req.params;
             const model = await getTicketById(id);
             //Check case status
+            model.caseStatus = CASE_STATUS_PROCESS;
+            await model.save();
+            return res.json({
+                data: model,
+            })
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    async changeDone(req, res, next) {
+        try {
+            const {id} = req.params;
+            const {voc, vocEn, note, noteEn} = req.body;
+
+            const model = await getTicketById(id);
+            //Set VOC
+            model.set({
+                caseStatus: CASE_STATUS_DONE,
+                voc,
+                vocEn,
+                note,
+                noteEn,
+                userClose: req.user.id,
+
+            });
+            await model.save();
+
             return res.json({
                 data: model,
             })
@@ -189,6 +219,7 @@ export default class TicketController extends BaseController {
                 ]
             });
             const criteria = paginationQuery(queryObj, req);
+            console.log(criteria);
             const models = await db.Ticket.findAll({
                 ...criteria,
                 include: [
