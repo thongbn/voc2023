@@ -16,7 +16,7 @@ export const errorCatch = (errResponse, form) => {
     console.error("errorCatch", errResponse);
     if (errResponse.response && errResponse.response.data) {
         const data = errResponse.response.data;
-        if (data.errors && form) {
+        if (data.errors) {
             try {
                 let fields = [];
                 data.errors.map(item => {
@@ -29,7 +29,7 @@ export const errorCatch = (errResponse, form) => {
                     }
                     errField.errors.push(item.msg);
                 });
-                form.setFields(fields);
+                form?.setFields(fields);
                 return;
             } catch (e) {
                 console.error(e);
@@ -77,7 +77,6 @@ const ApiHelper = () => {
         return response
     }, async function (error) {
         const originalRequest = error.config;
-        console.log(error);
         if (error.response.status === 403 && !originalRequest._retry) {
             originalRequest._retry = true;
             try {

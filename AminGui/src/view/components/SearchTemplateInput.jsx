@@ -16,7 +16,6 @@ const SearchTemplateInput = ({onChange}) => {
                 }
             });
             const {data} = res.data;
-            console.log(data);
             setData(data);
         } catch (e) {
             errorCatch(e);

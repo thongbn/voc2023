@@ -146,17 +146,14 @@ const TicketConversation = ({dataSource, isLoading}) => {
     };
 
     const onSelectTemplate = (val, obj) => {
-        console.log(val, obj);
         form.setFieldValue("message", obj.content);
     };
 
     const onSelectImage = (item) => {
-        console.log(item);
         setSelectImgList([
             ...selectImgList,
             item
         ]);
-        console.log(selectImgList);
         setMediaLibVisible(false);
     };
 

@@ -59,7 +59,7 @@ const Page = () => {
                     <Tag color="">New</Tag>
                 </Space>
             </Col>
-            <Col md={16}>
+            <Col xs={24} md={16}>
                 <Space direction="vertical" size={"small"} style={{width: "100%"}}>
                     <Card size="small"
                           tabList={tabList}
@@ -73,7 +73,7 @@ const Page = () => {
                     </Card>
                 </Space>
             </Col>
-            <Col md={8}>
+            <Col xs={24} md={8}>
                 <Space direction="vertical" size={"small"} style={{width: "100%"}}>
                     <Card size="small" title={`Trạng thái`}>
                         <Skeleton loading={loading} active>
