@@ -24,7 +24,8 @@ export default class TemplateController extends BaseController {
                 },
                 basedProperties: [
                     'id',
-                    'title'
+                    'title',
+                    'content'
                 ]
             });
 
@@ -42,12 +43,12 @@ export default class TemplateController extends BaseController {
                             },
                             {
                                 content: {
-                                    [Op.like]: `${query.s}%`
+                                    [Op.like]: `%${query.s}%`
                                 }
                             }
                         ],
                     },
-                    attributes: ['id', 'content']
+                    attributes: ['id', 'title', 'content']
                 };
             }
 

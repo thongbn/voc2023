@@ -2,10 +2,16 @@ export const paginationQuery = (queryObj, req) => {
     let {limit, page} = req.query;
     if (!limit) {
         limit = 20;
+    }else{
+        limit = parseInt(limit);
     }
+
     if (!page) {
         page = 1;
+    }else {
+        page = parseInt(page);
     }
+
     const offset = (page - 1) * limit;
     return {
         ...queryObj,

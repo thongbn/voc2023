@@ -23,6 +23,7 @@ import {
     RiFileUnknowLine
 } from "react-icons/ri";
 import MediaManager from "../../components/media-manager/MediaManager";
+import SearchTemplateInput from "../../components/SearchTemplateInput";
 
 const {TextArea} = Input;
 
@@ -43,13 +44,10 @@ const TicketConversation = ({dataSource, isLoading}) => {
             onFinish={onReplyComment}
         >
             <Form.Item>
-                <Select placeholder={"Nhập id, từ khóa của template"}
-                        showSearch
-                        onSearch={onSearchTemplate}
-                        onSelect={onSelectTemplate}/>
+                <SearchTemplateInput onChange={onSelectTemplate}/>
             </Form.Item>
             <Form.Item name="message">
-                <TextArea rows={3} placeholder={"Nhập phản hồi"}/>
+                <TextArea rows={5} placeholder={"Nhập phản hồi"}/>
             </Form.Item>
             <Form.Item>
                 <Space size="small" wrap>
@@ -147,13 +145,9 @@ const TicketConversation = ({dataSource, isLoading}) => {
 
     };
 
-
-    const onSearchTemplate = () => {
-
-    };
-
-    const onSelectTemplate = () => {
-
+    const onSelectTemplate = (val, obj) => {
+        console.log(val, obj);
+        form.setFieldValue("message", obj.content);
     };
 
     const onSelectImage = (item) => {
