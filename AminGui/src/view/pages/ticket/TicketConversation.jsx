@@ -12,7 +12,7 @@ import {
     Row,
     Modal,
     Image,
-    Typography
+    Typography, Divider, Descriptions
 } from "antd";
 import moment from "moment";
 import React, {useEffect, useState, memo} from "react";
@@ -24,15 +24,18 @@ import {
 } from "react-icons/ri";
 import MediaManager from "../../components/media-manager/MediaManager";
 import SearchTemplateInput from "../../components/SearchTemplateInput";
+import {useSelector} from "react-redux";
+import {CASE_STATUS_DONE} from "../../../configs/appConfig";
+import {formatDate} from "../../../utils/StringHelper";
 
 const {TextArea} = Input;
 
-const TicketConversation = ({dataSource, isLoading}) => {
+const TicketConversation = ({loading}) => {
 
+    const {ticket, ticketStatus} = useSelector(({ticket}) => ticket);
     const [form] = Form.useForm();
     const [selectImgList, setSelectImgList] = useState([]);
     const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(isLoading);
     const [mediaLibVisible, setMediaLibVisible] = useState(false);
 
     const CommentForm = () => {
@@ -72,15 +75,6 @@ const TicketConversation = ({dataSource, isLoading}) => {
             </Row>
         </Form>)
     };
-
-    useEffect(() => {
-        setData(dataSource);
-    }, [dataSource]);
-
-    useEffect(() => {
-        setLoading(isLoading);
-    }, [isLoading]);
-
 
     const renderItem = (item) => {
         let previewItem = null;
@@ -197,11 +191,6 @@ const TicketConversation = ({dataSource, isLoading}) => {
                     <span>{moment().subtract(2, "days").fromNow()}</span>
                 </Tooltip>
             ),
-        },
-        {
-            author: "Aeon Mall",
-            avatar: <Avatar src="https://picsum.photos/200/300"/>,
-            content: <CommentForm/>,
         }
     ];
 
@@ -225,6 +214,22 @@ const TicketConversation = ({dataSource, isLoading}) => {
                     </li>
                 )}
             />
+
+            {ticketStatus !== CASE_STATUS_DONE ? <CommentForm/> : (
+                <>
+                    <Divider/>
+                    <Typography.Title level={5}>
+                        VOC
+                    </Typography.Title>
+                    <Descriptions size="small" bordered column={1}>
+                        <Descriptions.Item label="Voc">{ticket?.vocMessage}</Descriptions.Item>
+                        <Descriptions.Item label="Voc (Eng)">{ticket?.vocMessageEn}</Descriptions.Item>
+                        <Descriptions.Item label="Solution">{ticket?.vocNote}</Descriptions.Item>
+                        <Descriptions.Item label="Solution (Eng)">{ticket?.vocNoteEn}</Descriptions.Item>
+                        <Descriptions.Item label="Close date">{formatDate(ticket?.closedDate)}</Descriptions.Item>
+                    </Descriptions>
+                </>
+            )}
             <Modal title="Media Library"
                    open={mediaLibVisible}
                    style={{

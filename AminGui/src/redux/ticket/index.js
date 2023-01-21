@@ -13,6 +13,9 @@ const tagSlice = createSlice({
     name: "ticket",
     initialState: initialState(),
     reducers: {
+        setTicketLoading(state, action) {
+            state.isLoading = action.payload;
+        },
         updateTicket(state, action) {
             state.ticket = action.payload;
             if (state.ticket.userNote) {

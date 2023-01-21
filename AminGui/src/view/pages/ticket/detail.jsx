@@ -1,5 +1,5 @@
 import React, {memo, useEffect, useState} from "react";
-import {Button, Card, Col, Row, Segmented, Skeleton, Space, Tag, Typography} from "antd";
+import {Button, Card, Col, Divider, Row, Segmented, Skeleton, Space, Tag, Typography} from "antd";
 import {useHistory, useParams} from "react-router-dom";
 import TicketConversation from "./TicketConversation";
 import TicketTags from "./TicketTags";
@@ -11,8 +11,8 @@ import TicketNote from "./TicketNote";
 import ApiHelper, {errorCatch} from "../../../utils/ApiHelper";
 import {useDispatch, useSelector} from "react-redux";
 import {updateTicket} from "../../../redux/ticket";
-import {renderCaseStatusTag} from "../../../utils/AppRenderHelper";
-import {CASE_STATUS_NEW, CASE_STATUS_DONE, CASE_STATUS_PROGRESSING} from "../../../configs/appConfig";
+import {renderCaseStatusTag, renderPlatformIcon} from "../../../utils/AppRenderHelper";
+import {CASE_STATUS_NEW, CASE_STATUS_DONE, CASE_STATUS_PROCESSING} from "../../../configs/appConfig";
 import TicketCaseStatus from "./TicketCaseStatus";
 
 const Page = () => {
@@ -62,7 +62,7 @@ const Page = () => {
     ];
 
     const contentList = {
-        conversation: <TicketConversation dataSource={null} isLoading={loading}/>,
+        conversation: <TicketConversation isLoading={loading}/>,
         log: <TicketLogs id={id}/>,
         info: <TicketOtherInfo/>,
         latestCase: <TicketLatestCase/>
@@ -75,11 +75,14 @@ const Page = () => {
     return (
         <Row gutter={[8, 8]}>
             <Col xs={24}>
-                <Space>
+                <Space split={<Divider type={"vertical"}/>}>
                     <Typography.Title level={4} style={{marginBottom: 0}}>
-                        <RiInstagramLine className="remix-icon"/> #{id}
+                        Case #{id}
                     </Typography.Title>
-                    {renderCaseStatusTag(ticketReducer?.ticket?.caseStatus)}
+                    <Typography.Title level={4} style={{marginBottom: 0}}>
+                        {renderPlatformIcon(ticketReducer?.ticket?.platform)}
+                    </Typography.Title>
+                    {renderCaseStatusTag(ticketReducer?.ticketStatus)}
                 </Space>
             </Col>
             <Col xs={24} md={16}>

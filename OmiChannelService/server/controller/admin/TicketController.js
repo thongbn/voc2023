@@ -23,8 +23,8 @@ export default class TicketController extends BaseController {
         this.getRouter().get('/:id/tags', this.getTags.bind(this));
         this.getRouter().post('/:id/tags', this.addTag.bind(this));
         //Detail
-        this.getRouter().get('/:id/set-inprogress', this.changeProcess.bind(this));
-        this.getRouter().get('/:id/set-done', this.changeDone.bind(this));
+        this.getRouter().post('/:id/set-processing', this.changeProcess.bind(this));
+        this.getRouter().post('/:id/set-done', this.changeDone.bind(this));
         this.getRouter().get('/:id', this.detail.bind(this));
     }
 
@@ -64,12 +64,12 @@ export default class TicketController extends BaseController {
             //Set VOC
             model.set({
                 caseStatus: CASE_STATUS_DONE,
-                voc,
-                vocEn,
-                note,
-                noteEn,
+                vocMessage: voc,
+                vocMessageEn: vocEn,
+                vocNote: note,
+                vocNoteEn: noteEn,
                 userClose: req.user.id,
-
+                closedDate: new Date()
             });
             await model.save();
 

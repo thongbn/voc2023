@@ -71,14 +71,14 @@ export const PLATFORMS = {
 };
 
 export const CASE_STATUS_NEW = "1_new";
-export const CASE_STATUS_PROGRESSING = "2_progressing";
+export const CASE_STATUS_PROCESSING = "2_processing";
 export const CASE_STATUS_DONE = "3_done";
 export const CASE_STATUS = {
     "1_new": {
         name: "New",
         color: "info",
     },
-    "2_progressing": {
+    "2_processing": {
         name: "Progressing",
         color: "warning",
     },
