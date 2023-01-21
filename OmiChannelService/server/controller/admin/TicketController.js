@@ -187,7 +187,9 @@ export default class TicketController extends BaseController {
 
             await model.save();
 
-            return res.json(notes);
+            return res.json({
+                data: notes
+            });
         } catch (e) {
             next(e);
         }

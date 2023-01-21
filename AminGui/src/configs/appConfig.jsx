@@ -69,3 +69,21 @@ export const PLATFORMS = {
         color: <RiSendPlaneLine  className="remix-icon"/>
     },
 };
+
+export const CASE_STATUS_NEW = "1_new";
+export const CASE_STATUS_PROGRESSING = "2_progressing";
+export const CASE_STATUS_DONE = "3_done";
+export const CASE_STATUS = {
+    "1_new": {
+        name: "New",
+        color: "info",
+    },
+    "2_progressing": {
+        name: "Progressing",
+        color: "warning",
+    },
+    "3_done": {
+        name: "Done",
+        color: "success",
+    },
+};

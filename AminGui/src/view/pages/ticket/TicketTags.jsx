@@ -55,6 +55,7 @@ const TicketTags = ({id}) => {
                       className="form-tags-all"
                     // labelCol={{span: 8}}
                     // wrapperCol={{span: 14}}
+                    key={`f_tag_${idx}`}
                 >
                     <Row gutter={[8]}>
                         <Col xs={20}>
