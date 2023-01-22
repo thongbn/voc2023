@@ -28,6 +28,11 @@ export const TRANS_PAID_STATUS = {
     },
 };
 
+export const CASE_TYPE_MESSAGE = "message";
+export const CASE_TYPE_COMMENT = "comment";
+export const CASE_TYPE_RATING = "rating";
+export const CASE_TYPE_CUSTOM = "custom";
+export const CASE_TYPE_FEEDBACK = "feedback";
 export const CASE_TYPES = {
     message: {
         name: "Message",
@@ -77,10 +82,10 @@ export const CASE_STATUS = {
     },
     "2_processing": {
         name: "Progressing",
-        color: "warning",
+        color: "volcano",
     },
     "3_done": {
         name: "Done",
-        color: "success",
+        color: "default",
     },
 };

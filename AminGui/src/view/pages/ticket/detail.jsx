@@ -11,7 +11,12 @@ import TicketNote from "./TicketNote";
 import ApiHelper, {errorCatch} from "../../../utils/ApiHelper";
 import {useDispatch, useSelector} from "react-redux";
 import {updateTicket} from "../../../redux/ticket";
-import {renderCaseStatusTag, renderPlatformIcon, renderType} from "../../../utils/AppRenderHelper";
+import {
+    renderCaseStatusTag,
+    renderInboxTimeWarning,
+    renderPlatformIcon,
+    renderType
+} from "../../../utils/AppRenderHelper";
 import {CASE_STATUS_NEW, CASE_STATUS_DONE, CASE_STATUS_PROCESSING} from "../../../configs/appConfig";
 import TicketCaseStatus from "./TicketCaseStatus";
 
@@ -86,6 +91,9 @@ const Page = () => {
                         {renderType(ticketReducer?.ticket?.type)}
                     </Typography.Title>
                     {renderCaseStatusTag(ticketReducer?.ticketStatus)}
+                    <Typography.Title level={4} style={{marginBottom: 0}}>
+                        {renderInboxTimeWarning(ticketReducer?.ticket)}
+                    </Typography.Title>
                 </Space>
             </Col>
             <Col xs={24} md={16}>
@@ -119,6 +127,6 @@ const Page = () => {
             </Col>
         </Row>
     )
-}
+};
 
 export default memo(Page);

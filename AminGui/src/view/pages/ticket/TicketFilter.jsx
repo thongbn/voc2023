@@ -1,34 +1,12 @@
 import React, {useCallback, useEffect} from "react";
 import {Button, Form, Input, Select, DatePicker, message} from "antd";
 import moment from "moment";
-import {Search} from "react-iconly";
 import {CASE_STATUS, PLATFORMS} from "../../../configs/appConfig";
-import {useDispatch, useSelector} from "react-redux";
-import ApiHelper from "../../../utils/ApiHelper";
-import {getTagsSuccess} from "../../../redux/tags";
+import {useSelector} from "react-redux";
+import {RiSearch2Line} from "react-icons/ri";
 
 const TicketFilter = ({form, onSubmit}) => {
-    const dispatch = useDispatch();
     const {tagCategories} = useSelector(({tag}) => tag);
-
-    useEffect(() => {
-        if (tagCategories?.length === 0) {
-            loadTagCategory();
-        }
-    }, []);
-
-    const loadTagCategory = useCallback(async () => {
-        try {
-            const res = await ApiHelper().get("/tags/all");
-            const {data} = res.data;
-            data.sort((a, b) => b.sort_order - a.sort_order);
-            dispatch(getTagsSuccess(data));
-            console.log(data);
-        } catch (e) {
-            message.error(e.message);
-        }
-    }, []);
-
 
     return (
         <Form form={form} onFinish={onSubmit} layout={"inline"} size={"small"}>
@@ -103,7 +81,10 @@ const TicketFilter = ({form, onSubmit}) => {
                 </Select>
             </Form.Item>
             <Form.Item>
-                <Button htmlType={"submit"} type={"primary"} icon={<Search style={{width: "20px"}}/>}>Tìm kiếm</Button>
+                <Button htmlType={"submit"} type={"primary"}
+                        icon={<RiSearch2Line className="remix-icon"/>}>
+                    Tìm kiếm
+                </Button>
             </Form.Item>
         </Form>
     )

@@ -4,8 +4,15 @@ import moment from "moment";
 import ApiHelper, {errorCatch} from "../../../utils/ApiHelper";
 import {useHistory} from 'react-router-dom';
 import {formatDate} from "../../../utils/StringHelper";
-import {renderCaseStatusTag, renderPlatformIcon, renderTicketTag, renderType} from "../../../utils/AppRenderHelper";
+import {
+    renderCaseStatusTag,
+    renderInboxTimeWarning,
+    renderPlatformIcon,
+    renderTicketTag,
+    renderType
+} from "../../../utils/AppRenderHelper";
 import qs from 'qs';
+import {CASE_TYPE_MESSAGE} from "../../../configs/appConfig";
 
 const {Paragraph, Link} = Typography;
 
@@ -129,6 +136,7 @@ const TicketList = ({query, onChangePage}) => {
                         </Typography.Text>
                         <Space size="small" split={<Divider type="vertical"/>}>
                             {renderPlatformIcon(row.platform)}
+                            {row.type === CASE_TYPE_MESSAGE && renderInboxTimeWarning(row)}
                             <Space wrap size={"small"}>
                                 {dataTagList[row.id]?.map((item, idx) => {
                                     return renderTicketTag(item, "tag-sm");
@@ -160,6 +168,7 @@ const TicketList = ({query, onChangePage}) => {
     return (
         <Skeleton active={true} loading={loading}>
             <Table columns={columns}
+                   bordered
                    dataSource={dataList.data}
                    size="small"
                    scroll={{x: 500}}

@@ -9,18 +9,11 @@ import {renderTicketTag} from "../../../utils/AppRenderHelper";
 const TicketTags = ({id}) => {
 
     const tagReducer = useSelector(({tag}) => tag);
-    const dispatch = useDispatch();
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         loadTags(id);
     }, [id]);
-
-    useEffect(() => {
-        if (tagReducer?.tagCategories?.length === 0) {
-            loadTagCategory();
-        }
-    }, []);
 
     const [tags, setTags] = useState([]);
 

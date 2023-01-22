@@ -1,7 +1,8 @@
-import {CASE_STATUS, CASE_TYPES, PLATFORMS} from "../configs/appConfig";
+import {CASE_STATUS, CASE_TYPE_MESSAGE, CASE_TYPES, PLATFORMS} from "../configs/appConfig";
 import {RiFileUnknowFill} from "react-icons/ri";
 import React from "react";
 import {Tag, Typography} from 'antd';
+import moment from "moment";
 
 export const renderPlatformIcon = (platform) => {
     try {
@@ -46,16 +47,55 @@ export const renderTicketTag = (tag, className = "") => {
     </Tag>
 };
 
-const renderInboxTimeWarning = (ticket) => {
-    if(!ticket.lcmTime){
-       return "";
+export const renderInboxTimeWarning = (ticket, className = "") => {
+
+    if (!ticket || ticket.type !== CASE_TYPE_MESSAGE) {
+        return <></>;
     }
 
+    if (!ticket.lcmTime) {
+        return <></>;
+    }
+
+    if (!ticket.lrmTime) {
+        ticket.lrmTime = null;
+    }
+
+
     try {
-        return <Tag>
+        const lcmTime = moment(ticket.lcmTime);
+        const lrmTime = moment(ticket.lrmTime);
+        const diff = lcmTime.diff(lrmTime);
+        const duration = moment.duration(diff);
+        const hours = duration.asHours();
+
+        if(hours < 0){
+            return <Typography.Text type='secondary' italic style={{fontSize: "10px", fontWeight: "normal"}}>
+                Wait customer feedback
+            </Typography.Text>;
+        }
+
+        const nowTime = moment();
+        const duration2 = moment.duration(nowTime.diff(lcmTime));
+
+
+        console.log(hours, duration2.asHours());
+
+        let title = "24h+";
+        let color = "error";
+        if (hours < 12) {
+            title = "< 12h";
+            color = "success";
+        } else if (hours < 24) {
+            title = "12h+";
+            color = "yellow";
+        }
+
+        return <Tag color={color} className={`${className}`}>
+            {title}
         </Tag>
-    }catch (e) {
+    } catch (e) {
         console.error(e);
-        return "";
+        return <></>;
     }
 };
