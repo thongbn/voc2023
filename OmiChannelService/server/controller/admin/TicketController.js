@@ -4,7 +4,7 @@ import db from "../../models";
 import queryStringConverter from "sequelize-querystring-converter";
 import {paginationDataResult, paginationQuery} from "../../helper/queryHelper";
 import {getTicketById} from "../../services/TicketService";
-import {getTagById, getTagModel, getTagsByModelId} from "../../services/TagService";
+import {getTagById, getTagModel, getTagsByModelId, getTicketTagsByIds} from "../../services/TagService";
 import {CASE_STATUS_DONE, CASE_STATUS_PROCESS} from "../../helper/appConst";
 
 export default class TicketController extends BaseController {
@@ -15,6 +15,7 @@ export default class TicketController extends BaseController {
     initRouter() {
         super.initRouter();
         this.getRouter().get('/', this.index.bind(this));
+        this.getRouter().get('/tags', this.getTagsByTicketIds.bind(this));
 
         //Note function
         this.getRouter().post('/:id/note', this.addNote.bind(this));
@@ -88,6 +89,23 @@ export default class TicketController extends BaseController {
 
             const tags = await getTagsByModelId(
                 model.id
+                , "Ticket"
+                , ['id', 'tag_name', 'color']);
+
+            return res.json({
+                data: tags
+            })
+
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    async getTagsByTicketIds(req, res, next) {
+        try {
+            const {ticketIds} = req.query;
+            const tags = await getTicketTagsByIds(
+                ticketIds.split(",")
                 , "Ticket"
                 , ['id', 'tag_name', 'color']);
 
@@ -221,7 +239,6 @@ export default class TicketController extends BaseController {
                 ]
             });
             const criteria = paginationQuery(queryObj, req);
-            console.log(criteria);
             const models = await db.Ticket.findAll({
                 ...criteria,
                 include: [

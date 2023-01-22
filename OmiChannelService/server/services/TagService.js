@@ -42,3 +42,26 @@ export const getTagsByModelId = async (modelId, modelType, attributes = ["*"]) =
         ]
     });
 };
+
+export const getTicketTagsByIds = async (modelIds = []
+                                         , modelType = "Ticket"
+                                         , attributes = ["*"]) => {
+    if (!modelIds || modelIds.length === 0) {
+        return [];
+    }
+
+    return await db.TagModel.findAll({
+        where: {
+            model_id: modelIds,
+            model_type: modelType,
+        },
+        attributes: ["tag_id", 'model_id', 'model_type'],
+        include: [
+            {
+                model: db.TagVoc,
+                as: "tag",
+                attributes,
+            }
+        ]
+    });
+};

@@ -1,10 +1,10 @@
-import {message, Button, Skeleton, Table, Space, Typography} from "antd";
-import React, {memo, useEffect, useState} from "react";
+import {message, Button, Skeleton, Table, Tooltip, Typography, Space, Divider} from "antd";
+import React, {memo, useCallback, useEffect, useState} from "react";
 import moment from "moment";
-import ApiHelper from "../../../utils/ApiHelper";
+import ApiHelper, {errorCatch} from "../../../utils/ApiHelper";
 import {useHistory} from 'react-router-dom';
 import {formatDate} from "../../../utils/StringHelper";
-import {renderPlatformIcon} from "../../../utils/AppRenderHelper";
+import {renderCaseStatusTag, renderPlatformIcon, renderTicketTag, renderType} from "../../../utils/AppRenderHelper";
 import qs from 'qs';
 
 const {Paragraph, Link} = Typography;
@@ -12,6 +12,7 @@ const {Paragraph, Link} = Typography;
 const TicketList = ({query, onChangePage}) => {
     const history = useHistory();
     const [loading, setLoading] = useState(false);
+    const [loadingTags, setLoadingTags] = useState(false);
     const [dataList, setDataList] = useState({
         data: [],
         pagination: {
@@ -19,61 +20,11 @@ const TicketList = ({query, onChangePage}) => {
             limit: 20
         }
     });
+    const [dataTagList, setDataTagList] = useState({});
 
     useEffect(() => {
-        searchModels(query);
+        searchModels(query).catch(e => errorCatch(e));
     }, [query]);
-
-    const onOpenDetail = (id) => {
-        history.push(`/case/${id}`);
-    };
-
-    const columns = [
-        {
-            key: "platform",
-            title: "Platform",
-            dataIndex: "platform",
-            render: (text, row) => <Typography.Text>
-                <Link onClick={() => onOpenDetail(row.id)}>#{row.id}</Link> {renderPlatformIcon(text)} {row.type}
-            </Typography.Text>,
-        },
-        {
-            key: "firstMessage",
-            title: "Message",
-            dataIndex: "firstMessage",
-            render: (text, row) => {
-                return (
-                    <Typography>
-                        <Paragraph>
-                            {text}
-                        </Paragraph>
-                    </Typography>
-                )
-            },
-        },
-        {
-            key: "caseStatus",
-            title: "Trạng thái",
-            dataIndex: "caseStatus",
-            render: (text) => <p>{text}</p>,
-        },
-        {
-            key: "createdAt",
-            title: "Created",
-            dataIndex: "createdAt",
-            render: (text) => {
-                return formatDate(text);
-            },
-        },
-        {
-            key: "updatedAt",
-            title: "Updated",
-            dataIndex: "updatedAt",
-            render: (text) => {
-                return formatDate(text);
-            },
-        },
-    ];
 
     const searchModels = async (query) => {
         try {
@@ -93,18 +44,25 @@ const TicketList = ({query, onChangePage}) => {
                     : null,
                 tags: query.tags ? `in:${query.tags.join(",")}` : null,
                 page: query.page,
-                sort: "-createdAt"
+                sort: "caseStatus,-createdAt"
             };
 
 
-            const q  = qs.stringify(formatQuery, {
+            const q = qs.stringify(formatQuery, {
                     encodeValuesOnly: true,
                     skipNulls: true
                 }
             );
 
             const res = await ApiHelper().get(`/tickets?${q}`);
-            console.log(res.data);
+            const listTickets = res.data.data;
+
+            const ticketIds = listTickets.map(item => item.id);
+            console.log(ticketIds);
+
+            //Run async
+            loadingTagTickets(ticketIds);
+
             setDataList(res.data);
         } catch (e) {
             await message.error(e.message);
@@ -112,6 +70,92 @@ const TicketList = ({query, onChangePage}) => {
             setLoading(false);
         }
     };
+
+    const onOpenDetail = (id) => {
+        history.push(`/case/${id}`);
+    };
+
+    const openCustomerDetail = (customerId) => {
+
+    };
+
+    const loadingTagTickets = async (ticketIds = []) => {
+        try {
+            setLoadingTags(true);
+            const res = await ApiHelper().get(`/tickets/tags`, {
+                params: {
+                    ticketIds: ticketIds.join(",")
+                }
+            });
+            const tagModels = {};
+            res?.data?.data.forEach((item, idx) => {
+                if (!tagModels[item.model_id]) {
+                    tagModels[item.model_id] = [];
+                }
+                tagModels[item.model_id].push(item.tag);
+            });
+            console.log(tagModels);
+            setDataTagList(tagModels);
+        } catch (e) {
+            errorCatch(e);
+        } finally {
+            setLoadingTags(false)
+        }
+    };
+
+    const columns = [
+        {
+            key: "platform",
+            title: "Platform",
+            dataIndex: "platform",
+            render: (text, row) => <Typography.Text>
+                <Link onClick={() => onOpenDetail(row.id)}>
+                    #{row.id} {renderType(row.type)}
+                </Link>
+            </Typography.Text>,
+        },
+        {
+            key: "firstMessage",
+            title: "Message",
+            dataIndex: "firstMessage",
+            render: (text, row) => {
+                return (
+                    <Space direction="vertical" size="small">
+                        <Typography.Text>
+                            <Link onClick={() => openCustomerDetail(row.customer?.id)}>
+                                <strong>{row.customer?.name || '---'}: </strong>
+                            </Link>
+                            {text}
+                        </Typography.Text>
+                        <Space size="small" split={<Divider type="vertical"/>}>
+                            {renderPlatformIcon(row.platform)}
+                            <Space wrap size={"small"}>
+                                {dataTagList[row.id]?.map((item, idx) => {
+                                    return renderTicketTag(item, "tag-sm");
+                                }) || <Typography.Text italic>Not tagging yet</Typography.Text>}
+                            </Space>
+                        </Space>
+                    </Space>
+                )
+            },
+        },
+        {
+            key: "caseStatus",
+            title: "Trạng thái",
+            dataIndex: "caseStatus",
+            render: (text) => renderCaseStatusTag(text),
+        },
+        {
+            key: "updatedAt",
+            title: "Updated",
+            dataIndex: "updatedAt",
+            render: (text, row) => {
+                return <Tooltip title={`Updated at: ${formatDate(row.updatedAt)}`}>
+                    {formatDate(text)}
+                </Tooltip>
+            },
+        },
+    ];
 
     return (
         <Skeleton active={true} loading={loading}>

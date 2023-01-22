@@ -11,7 +11,7 @@ import TicketNote from "./TicketNote";
 import ApiHelper, {errorCatch} from "../../../utils/ApiHelper";
 import {useDispatch, useSelector} from "react-redux";
 import {updateTicket} from "../../../redux/ticket";
-import {renderCaseStatusTag, renderPlatformIcon} from "../../../utils/AppRenderHelper";
+import {renderCaseStatusTag, renderPlatformIcon, renderType} from "../../../utils/AppRenderHelper";
 import {CASE_STATUS_NEW, CASE_STATUS_DONE, CASE_STATUS_PROCESSING} from "../../../configs/appConfig";
 import TicketCaseStatus from "./TicketCaseStatus";
 
@@ -48,10 +48,6 @@ const Page = () => {
             tab: 'Conversation',
         },
         {
-            key: 'log',
-            tab: 'Activity logs',
-        },
-        {
             key: 'info',
             tab: 'Information',
         },
@@ -59,13 +55,17 @@ const Page = () => {
             key: 'latestCase',
             tab: 'Latest Case',
         },
+        {
+            key: 'log',
+            tab: 'Activity logs',
+        },
     ];
 
     const contentList = {
         conversation: <TicketConversation isLoading={loading}/>,
-        log: <TicketLogs id={id}/>,
         info: <TicketOtherInfo/>,
-        latestCase: <TicketLatestCase/>
+        latestCase: <TicketLatestCase/>,
+        log: <TicketLogs id={id}/>,
     };
 
     const onTabChange = (key) => {
@@ -81,6 +81,9 @@ const Page = () => {
                     </Typography.Title>
                     <Typography.Title level={4} style={{marginBottom: 0}}>
                         {renderPlatformIcon(ticketReducer?.ticket?.platform)}
+                    </Typography.Title>
+                    <Typography.Title level={4} style={{marginBottom: 0}}>
+                        {renderType(ticketReducer?.ticket?.type)}
                     </Typography.Title>
                     {renderCaseStatusTag(ticketReducer?.ticketStatus)}
                 </Space>

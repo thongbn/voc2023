@@ -1,9 +1,35 @@
-import React from "react";
-import {Button, Form, Input, Select, DatePicker} from "antd";
+import React, {useCallback, useEffect} from "react";
+import {Button, Form, Input, Select, DatePicker, message} from "antd";
 import moment from "moment";
 import {Search} from "react-iconly";
+import {CASE_STATUS, PLATFORMS} from "../../../configs/appConfig";
+import {useDispatch, useSelector} from "react-redux";
+import ApiHelper from "../../../utils/ApiHelper";
+import {getTagsSuccess} from "../../../redux/tags";
 
 const TicketFilter = ({form, onSubmit}) => {
+    const dispatch = useDispatch();
+    const {tagCategories} = useSelector(({tag}) => tag);
+
+    useEffect(() => {
+        if (tagCategories?.length === 0) {
+            loadTagCategory();
+        }
+    }, []);
+
+    const loadTagCategory = useCallback(async () => {
+        try {
+            const res = await ApiHelper().get("/tags/all");
+            const {data} = res.data;
+            data.sort((a, b) => b.sort_order - a.sort_order);
+            dispatch(getTagsSuccess(data));
+            console.log(data);
+        } catch (e) {
+            message.error(e.message);
+        }
+    }, []);
+
+
     return (
         <Form form={form} onFinish={onSubmit} layout={"inline"} size={"small"}>
             <Form.Item name="type">
@@ -17,9 +43,11 @@ const TicketFilter = ({form, onSubmit}) => {
             </Form.Item>
             <Form.Item name="platform">
                 <Select placeholder={"Chọn hệ thống"} allowClear>
-                    <Select.Option value="ig">Instagram</Select.Option>
-                    <Select.Option value="fb">Facebook</Select.Option>
-                    <Select.Option value="zl">Zalo</Select.Option>
+                    {Object.keys(PLATFORMS).map(key => {
+                        return <Select.Option value={key} key={`p_s${key}`}>
+                            {PLATFORMS[key].name}
+                        </Select.Option>
+                    })}
                 </Select>
             </Form.Item>
             <Form.Item name="id">
@@ -27,9 +55,11 @@ const TicketFilter = ({form, onSubmit}) => {
             </Form.Item>
             <Form.Item name="caseStatus">
                 <Select placeholder={"Trạng thái"} allowClear>
-                    <Select.Option value="1_new">New</Select.Option>
-                    <Select.Option value="2_inProgress">In progress</Select.Option>
-                    <Select.Option value="3_completed">Completed</Select.Option>
+                    {Object.keys(CASE_STATUS).map(key => {
+                        return <Select.Option value={key} key={`p_cs${key}`}>
+                            {CASE_STATUS[key].name}
+                        </Select.Option>
+                    })}
                 </Select>
             </Form.Item>
             <Form.Item name="createdAt">
@@ -46,29 +76,31 @@ const TicketFilter = ({form, onSubmit}) => {
                     allowClear
                     mode="multiple"
                     optionFilterProp="children"
-                    filterOption={(input, option) => (option?.label.toLowerCase() ?? '').includes(input.toLowerCase())}
+                    filterOption={(input, option) => {
+                        console.log(option);
+                        return (
+                            (option?.children?.toLowerCase() ?? '').includes(input.toLowerCase())
+                        )
+                    }}
                     filterSort={(optionA, optionB) =>
                         (optionA?.label ?? '')
                             .toLowerCase()
                             .localeCompare(
                                 (optionB?.label ?? '')
-                                .toLowerCase()
+                                    .toLowerCase()
                             )
                     }
-                    options={[
-                        {
-                            label: 'Manager',
-                            options: [
-                                {label: 'Jack', value: 'jack'},
-                                {label: 'Lucy', value: 'lucy'},
-                            ],
-                        },
-                        {
-                            label: 'Engineer',
-                            options: [{label: 'yiminghe', value: 'Yiminghe'}],
-                        },
-                    ]}
-                />
+                >
+                    {tagCategories?.map((tagCategory, idx) => {
+                        return <Select.OptGroup label={tagCategory.name} key={`t_sog${idx}`}>
+                            {tagCategory.tags.map((tag, idx2) => {
+                                return <Select.Option value={tag.id} key={`t_t_${idx}${idx2}`}>
+                                    {tag.tag_name}
+                                </Select.Option>
+                            })}
+                        </Select.OptGroup>
+                    })}
+                </Select>
             </Form.Item>
             <Form.Item>
                 <Button htmlType={"submit"} type={"primary"} icon={<Search style={{width: "20px"}}/>}>Tìm kiếm</Button>

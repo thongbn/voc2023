@@ -4,6 +4,7 @@ import React, {useEffect, useState, useCallback, useMemo} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import ApiHelper, {errorCatch} from "../../../utils/ApiHelper";
 import {getTagsSuccess} from "../../../redux/tags";
+import {renderTicketTag} from "../../../utils/AppRenderHelper";
 
 const TicketTags = ({id}) => {
 
@@ -35,17 +36,6 @@ const TicketTags = ({id}) => {
             message.error(e.message);
         }
     };
-
-    const loadTagCategory = useCallback(async () => {
-        try {
-            const res = await ApiHelper().get("/tags/all");
-            const {data} = res.data;
-            data.sort((a, b) => b.sort_order - a.sort_order);
-            dispatch(getTagsSuccess(data));
-        } catch (e) {
-            message.error(e.message);
-        }
-    }, [tagReducer]);
 
     const renderAllTags = useCallback(() => {
         return <Skeleton loading={tagReducer.loadingTagCategories} active>
@@ -136,11 +126,7 @@ const TicketTags = ({id}) => {
                                                onConfirm={() => onRemoveTag(item.tag.id)}
                                                key={`it_${idx}`}
                             >
-                                <Tag color={item.tag.color}
-                                     className={`bg-${item.tag.color}`}
-                                >
-                                    {item.tag.tag_name}
-                                </Tag>
+                                {renderTicketTag(item.tag)}
                             </Popconfirm>
                         })}
                     </Space>
