@@ -16,7 +16,7 @@ export default class FBBaseHandler extends BaseHandler{
     };
 
     handleItem(item){
-
+        console.log("Un-implements handleItem");
     }
 
     /**
@@ -45,6 +45,6 @@ export default class FBBaseHandler extends BaseHandler{
      * @param {any}message
      */
     async handleMessage(id, time, message) {
-
+        console.log("Un-implements handleMessage");
     }
 }

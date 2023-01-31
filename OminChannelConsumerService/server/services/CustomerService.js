@@ -7,7 +7,7 @@ export const findCustomerByPlatformId = async (platform, platformId) => {
             platformId
         }
     });
-}
+};
 
 /**
  * 
@@ -25,6 +25,7 @@ export const updateOrCreateCustomer = async (platform, platformId) => {
         });
     }
     //TODO Get User information from access token
+    //TODO Check why always save
     await model.save();
     return model;
-}
+};

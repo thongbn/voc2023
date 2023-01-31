@@ -2,6 +2,7 @@ import {createRawData} from "../../services/RawService";
 import {FB_MESSAGE, FB_POSTBACK, PLATFORM_FB} from "../../appConst";
 import FBBaseHandler from "../FBBaseHandler";
 import {handlePostback, handleReaction, handleRead, handleTextAndAttachmentMessage} from "./FbMessageHandler";
+import {handleCommentArray} from "./FbCommentHandler";
 
 export default class FacebookHandler extends FBBaseHandler {
     constructor() {
@@ -9,10 +10,12 @@ export default class FacebookHandler extends FBBaseHandler {
     }
 
     handleItem(item) {
-        const {id, time, messaging} = item;
+        const {id, time, messaging, changes} = item;
         //TODO hop_context
         if (messaging) {
             this.handleMessagingArray(id, time, messaging);
+        } else if (changes) {
+            handleCommentArray(id, time, changes);
         } else {
             console.error("Item not supported");
         }

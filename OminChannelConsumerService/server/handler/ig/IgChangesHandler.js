@@ -53,6 +53,11 @@ const handleComment = async (platformId, time, value) => {
                 ticket.firstMessage = text;
                 await ticket.save();
             }
+        }else {
+            if (!ticket.firstMessage) {
+                ticket.firstMessage = "Maybe attachment comment";
+                await ticket.save();
+            }
         }
 
         textMessage.data = JSON.stringify(messData);

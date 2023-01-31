@@ -14,6 +14,6 @@ export default class BaseHandler {
     }
 
     handle(message) {
-
+        console.log("Un-implements handle");
     };
 }
