@@ -202,7 +202,7 @@ const TicketConversation = ({loading}) => {
                 size="small"
                 className="comment-list"
                 itemLayout="horizontal"
-                dataSource={ticket.messages}
+                dataSource={ticket?.messages || []}
                 renderItem={(item) => (
                     <li>
                         <TicketComment data={item}/>
