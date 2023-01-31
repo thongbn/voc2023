@@ -27,6 +27,7 @@ import SearchTemplateInput from "../../components/SearchTemplateInput";
 import {useSelector} from "react-redux";
 import {CASE_STATUS_DONE} from "../../../configs/appConfig";
 import {formatDate} from "../../../utils/StringHelper";
+import TicketComment from "./comment/TicketComment";
 
 const {TextArea} = Input;
 
@@ -94,7 +95,7 @@ const TicketConversation = ({loading}) => {
                     <Typography.Text ellipsis style={{fontSize: '10px'}}>
                         {item.name}
                     </Typography.Text>
-                </div>
+                </div>;
                 break;
             }
             case "video/mp4":
@@ -201,16 +202,10 @@ const TicketConversation = ({loading}) => {
                 size="small"
                 className="comment-list"
                 itemLayout="horizontal"
-                dataSource={fakeData}
+                dataSource={ticket.messages}
                 renderItem={(item) => (
                     <li>
-                        <Comment
-                            actions={item.actions}
-                            author={item.author}
-                            avatar={item.avatar}
-                            content={item.content}
-                            datetime={item.datetime}
-                        />
+                        <TicketComment data={item}/>
                     </li>
                 )}
             />

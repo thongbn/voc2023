@@ -89,3 +89,8 @@ export const CASE_STATUS = {
         color: "default",
     },
 };
+
+export const MESSAGE_TYPE_TEXT_ATTACHMENT = "text_attachments";
+export const MESSAGE_TYPE = {
+
+};

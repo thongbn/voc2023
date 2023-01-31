@@ -17,7 +17,6 @@ import {
     renderPlatformIcon,
     renderType
 } from "../../../utils/AppRenderHelper";
-import {CASE_STATUS_NEW, CASE_STATUS_DONE, CASE_STATUS_PROCESSING} from "../../../configs/appConfig";
 import TicketCaseStatus from "./TicketCaseStatus";
 
 const Page = () => {
