@@ -6,6 +6,13 @@ import TicketFilter from "./TicketFilter";
 import moment from "moment";
 import TicketList from "./TicketList";
 import qs from "qs";
+import {
+    CASE_TYPE_COMMENT,
+    CASE_TYPE_CUSTOM,
+    CASE_TYPE_FEEDBACK,
+    CASE_TYPE_MESSAGE,
+    CASE_TYPE_RATING
+} from "../../../configs/appConfig";
 
 const Page = () => {
     const { search } = useLocation();
@@ -82,23 +89,23 @@ const Page = () => {
             tab: <IntlMessages id="all" />,
         },
         {
-            key: "inbox",
+            key: CASE_TYPE_MESSAGE,
             tab: <IntlMessages id="inbox" />,
         },
         {
-            key: "rating",
+            key: CASE_TYPE_RATING,
             tab: <IntlMessages id="rating" />,
         },
         {
-            key: "custom",
+            key: CASE_TYPE_CUSTOM,
             tab: <IntlMessages id="custom" />,
         },
         {
-            key: "feedback",
+            key: CASE_TYPE_FEEDBACK,
             tab: <IntlMessages id="feedback" />,
         },
         {
-            key: "post-comment",
+            key: CASE_TYPE_COMMENT,
             tab: <IntlMessages id="post-comment" />,
         },
     ];

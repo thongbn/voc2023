@@ -35,7 +35,7 @@ export const CASE_TYPE_CUSTOM = "custom";
 export const CASE_TYPE_FEEDBACK = "feedback";
 export const CASE_TYPES = {
     message: {
-        name: "Message",
+        name: "Inbox",
     },
     comment: {
         name: "Comment"

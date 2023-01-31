@@ -50,6 +50,7 @@ const TicketList = ({query, onChangePage}) => {
                     `between: ${moment(query.createdAt).format('YYYY-MM-DD 00:00:00')},${moment(query.createdAt).format('YYYY-MM-DD 23:59:59')}`
                     : null,
                 tags: query.tags ? `in:${query.tags.join(",")}` : null,
+                type: query.type ? query.type : null,
                 page: query.page,
                 sort: "caseStatus,-createdAt"
             };
@@ -117,7 +118,7 @@ const TicketList = ({query, onChangePage}) => {
             dataIndex: "platform",
             render: (text, row) => <Typography.Text>
                 <Link onClick={() => onOpenDetail(row.id)}>
-                    #{row.id} {renderType(row.type)}
+                    {renderType(row.type)} #{row.id}
                 </Link>
             </Typography.Text>,
         },
