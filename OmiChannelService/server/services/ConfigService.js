@@ -39,13 +39,18 @@ export const setConfig = async (keyName, settingData = {}) => {
 };
 
 export const getConfig = async (keyName, defaultSetting = {}) => {
-    try {
-        //Get from redis
-        let settings = await redisClient().get(keyName);
+    let settings;
+    try{
+        settings = await redisClient().get(keyName);
         if (settings) {
             return JSON.parse(settings);
         }
+    }catch (e) {
+        console.error(e);
+    }
 
+    try {
+        //Get from redis
         //Get settings from db
         let model = await db.Setting.findOne({
             where: {

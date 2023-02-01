@@ -1,6 +1,6 @@
 import {BaseController} from "../BaseController";
 import db from "../../models";
-import {getOmiConfig, setConfig, setOmiConfig} from "../../services/ConfigService";
+import {getConfig, getOmiConfig, setConfig, setOmiConfig} from "../../services/ConfigService";
 import createError from "http-errors";
 
 export default class ConfigController extends BaseController {
@@ -19,7 +19,7 @@ export default class ConfigController extends BaseController {
 
     async index(req, res, next) {
         try {
-            const {key} = req.body;
+            const {key} = req.params;
             const settings = await getConfig(key);
             return res.json({
                 data: settings,
