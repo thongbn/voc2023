@@ -32,6 +32,11 @@ const SettingsRoutes = [
         component: lazy(() => import("../../view/pages/setting/other")),
         layout: "VerticalLayout",
     },
+    {
+        path: "/settings/account-linking",
+        component: lazy(() => import("../../view/pages/setting/account-linking")),
+        layout: "VerticalLayout",
+    },
 ];
 
 export default SettingsRoutes;

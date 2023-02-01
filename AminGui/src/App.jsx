@@ -8,7 +8,7 @@ import AppLocale from './languages';
 
 import Router from "./router/Router";
 import ApiHelper from "./utils/ApiHelper";
-import {getTagsSuccess} from "./redux/tags";
+import {getTagsSuccess, setLoadingTagCategory} from "./redux/tags";
 
 export default function App() {
     const dispatch = useDispatch();
@@ -31,6 +31,7 @@ export default function App() {
 
     const loadTagCategory = useCallback(async () => {
         try {
+            setLoadingTagCategory(true);
             const res = await ApiHelper().get("/tags/all");
             const {data} = res.data;
             data.sort((a, b) => b.sort_order - a.sort_order);
@@ -38,6 +39,8 @@ export default function App() {
             console.log(data);
         } catch (e) {
             message.error(e.message);
+        } finally {
+            setLoadingTagCategory(false)
         }
     }, []);
 

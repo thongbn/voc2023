@@ -1,30 +1,21 @@
 import React from "react";
+import FaqCategories from "./FaqCategories";
+import {Col, Row} from "antd";
+import FaqButtons from "./FaqButtons";
+import FaqList from "./FaqList";
 
-import {Row, Col, Button} from "antd";
+const Faq = () => {
+  return (<>
+    <FaqCategories />
+    <Row>
+      <Col xs={24} md={8}>
+        <FaqButtons />
+      </Col>
+      <Col xs={24} md={16}>
+        <FaqList />
+      </Col>
+    </Row>
+  </>)
+};
 
-import Line from "../../errors/line";
-import Header from "../../errors/header";
-import {Link} from "react-router-dom";
-import Footer from "../../errors/footer";
-
-export default function Blank() {
-    return (
-        <Row className="hp-text-center hp-overflow-hidden">
-            <Line/>
-            <Header/>
-            <Col className="hp-error-content hp-py-32" span={24}>
-                <Row className="hp-h-100" align="middle" justify="center">
-                    <Col>
-                        <h1 className="">
-                            Coming Soon
-                        </h1>
-                        <Link to="/">
-                            <Button type="primary">Back to Home</Button>
-                        </Link>
-                    </Col>
-                </Row>
-            </Col>
-            <Footer/>
-        </Row>
-    );
-}
+export default Faq;
