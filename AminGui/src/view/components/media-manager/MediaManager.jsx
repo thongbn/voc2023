@@ -147,6 +147,7 @@ const MediaManager = ({showSelect = false, onSelectImage, thumbHeight = 100}) =>
             }
             case "video/mp4":
             case "audio/mp4":
+            case "audio/mp3":
             case "application/mp4":
             case "application/x-mpegURL":
             case "video/quicktime":

@@ -51,6 +51,9 @@ export const CASE_TYPES = {
     },
 };
 
+export const PLATFORM_IG = "ig";
+export const PLATFORM_ZL = "zl";
+export const PLATFORM_FB = "fb";
 export const PLATFORMS = {
     "ig": {
         name: "Instagram",

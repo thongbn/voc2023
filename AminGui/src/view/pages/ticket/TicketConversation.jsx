@@ -19,7 +19,7 @@ import {
 import MediaManager from "../../components/media-manager/MediaManager";
 import SearchTemplateInput from "../../components/SearchTemplateInput";
 import {useDispatch, useSelector} from "react-redux";
-import {CASE_STATUS_DONE} from "../../../configs/appConfig";
+import {CASE_STATUS_DONE, CASE_TYPE_COMMENT, PLATFORM_IG} from "../../../configs/appConfig";
 import {formatDate} from "../../../utils/StringHelper";
 import TicketCommentList from "./comment/TicketCommentList";
 import ApiHelper from "../../../utils/ApiHelper";
@@ -51,7 +51,7 @@ const TicketConversation = ({loading}) => {
             <Form.Item name="message">
                 <TextArea rows={5} placeholder={"Nhập phản hồi"}/>
             </Form.Item>
-            <Form.Item>
+            {(ticket?.platform !== PLATFORM_IG || ticket?.type !== CASE_TYPE_COMMENT) && <Form.Item>
                 <Space size="small" wrap>
                     <Button type="link"
                             icon={<i className="ri-attachment-2-line"/>}
@@ -64,7 +64,7 @@ const TicketConversation = ({loading}) => {
                     })}
 
                 </Space>
-            </Form.Item>
+            </Form.Item>}
             <Row justify={"end"}>
                 <Space size='small'>
                     <Button type="primary"
@@ -152,8 +152,13 @@ const TicketConversation = ({loading}) => {
             });
             console.log(res.data);
             message.success("Comment sent successful.");
-            if(res.data?.ticket?.caseStatus){
+            if (res.data?.ticket?.caseStatus) {
                 dispatch(updateStatus(res.data.ticket.caseStatus));
+            }
+            if (res.data?.replyModel?.errors) {
+                res.data?.replyModel?.errors.map(item => {
+                    message.error(item);
+                });
             }
             form.resetFields();
         } catch (e) {

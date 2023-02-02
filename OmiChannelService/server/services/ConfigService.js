@@ -6,7 +6,9 @@ export const getFacebookSettings = async () => {
     const settings = await getOmiConfig();
     return {
         verifyToken: settings.facebook.verifyToken,
-        appSecret: settings.facebook.appSecret
+        appSecret: settings.facebook.appSecret,
+        appId: settings.facebook.appId,
+        pageId: settings.facebook.pageId,
     }
 };
 
@@ -98,4 +100,9 @@ export const getFbLLTToken = async () => {
 export const getFbMessToken = async () => {
     const data = await getConfig(FB_LONG_LIVE_TOKEN_KEY);
     return data.fbMessToken;
+};
+
+export const getIgMessToken = async () => {
+    const data = await getConfig(FB_LONG_LIVE_TOKEN_KEY);
+    return data.igMessToken;
 };

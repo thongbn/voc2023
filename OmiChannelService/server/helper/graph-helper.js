@@ -1,12 +1,23 @@
-import {getFbLLTToken, getFbMessToken} from "../services/ConfigService";
+import {getFbLLTToken, getFbMessToken, getIgMessToken} from "../services/ConfigService";
 import axios from "axios";
 
 const getBaseUrl = () => {
     return process.env.GRAPH_API_URL;
 };
 
-export const graphApiGet = async (path, queryObj, isMessToken = true) => {
-    const messToken = isMessToken ? await getFbMessToken() : await getFbLLTToken();
+export const graphApiGet = async (path, queryObj, messTokenType = "fb") => {
+    let messToken = "";
+    switch (messTokenType) {
+        case "ig":
+            messToken = await getIgMessToken();
+            break;
+        case "page":
+            messToken = await getFbLLTToken();
+            break;
+        default:
+            messToken = await getFbMessToken();
+            break;
+    }
     try {
         const res = await axios.get(`${getBaseUrl()}${path}`, {
             ...queryObj,
@@ -20,12 +31,24 @@ export const graphApiGet = async (path, queryObj, isMessToken = true) => {
     }
 };
 
-export const graphApiPost = async (path, data, isMessToken = true) => {
-    const messToken = isMessToken ? await getFbMessToken() : await getFbLLTToken();
+export const graphApiPost = async (path, data, messTokenType = "fb", queryObj= {}) => {
+    let messToken = "";
+    switch (messTokenType) {
+        case "ig":
+            messToken = await getIgMessToken();
+            break;
+        case "page":
+            messToken = await getFbLLTToken();
+            break;
+        default:
+            messToken = await getFbMessToken();
+            break;
+    }
     try {
         const res = await axios.post(`${getBaseUrl()}${path}`, data, {
             params: {
-                access_token: messToken
+                access_token: messToken,
+                ...queryObj
             }
         });
         console.log(res.data);
