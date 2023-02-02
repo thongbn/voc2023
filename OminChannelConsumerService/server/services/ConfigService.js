@@ -1,5 +1,6 @@
 import {redisClient} from "../RedisClient";
 import db from "../models";
+import {FB_LONG_LIVE_TOKEN_KEY} from "../appConst";
 
 export const getFacebookSettings = async () => {
     const settings = await getOmiConfig();
@@ -51,9 +52,22 @@ export const setOmiConfig = async (settings) => {
 };
 
 export const getOmiConfig = async () => {
+    return await getConfig("omi-config");
+};
+
+export const getFbLLTToken = async () => {
+    const data = await getConfig(FB_LONG_LIVE_TOKEN_KEY);
+    return data.llt;
+};
+
+export const getFbMessToken = async () => {
+    const data = await getConfig(FB_LONG_LIVE_TOKEN_KEY);
+    return data.fbMessToken;
+};
+
+const getConfig = async (keyName) => {
     try {
         //Get from redis
-        const keyName = "omi-config";
         let settings = await redisClient().get(keyName);
         if (settings) {
             return JSON.parse(settings);

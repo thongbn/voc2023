@@ -1,5 +1,6 @@
 import {redisClient} from "../database/RedisClient";
 import db from "../models";
+import {FB_LONG_LIVE_TOKEN_KEY} from "../helper/appConst";
 
 export const getFacebookSettings = async () => {
     const settings = await getOmiConfig();
@@ -87,4 +88,14 @@ export const getOmiConfig = async () => {
             appSecret: process.env.FACEBOOK_APP_SECRET
         }
     })
+};
+
+export const getFbLLTToken = async () => {
+    const data = await getConfig(FB_LONG_LIVE_TOKEN_KEY);
+    return data.llt;
+};
+
+export const getFbMessToken = async () => {
+    const data = await getConfig(FB_LONG_LIVE_TOKEN_KEY);
+    return data.fbMessToken;
 };

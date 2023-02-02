@@ -31,7 +31,8 @@ export default class ConfigController extends BaseController {
 
     async update(req, res, next) {
         try {
-            const {key, data} = req.body;
+            const {key} = req.params;
+            const {data} = req.body;
             if(!key && !data){
                 throw new createError(400, "Dư liệu không đủ");
             }

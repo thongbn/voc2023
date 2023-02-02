@@ -5,6 +5,8 @@ import moment from "moment";
 
 const TicketComment = ({data}) => {
 
+    console.log(data);
+
     const renderType = () => {
         switch (data.type) {
             case MESSAGE_TYPE_TEXT_ATTACHMENT:
@@ -17,8 +19,8 @@ const TicketComment = ({data}) => {
 
     return <Comment
         // actions={item.actions}
-        author={data.customerId}
-        avatar={<Avatar src="https://picsum.photos/200/300"/>}
+        author={data.customer?.fullname}
+        avatar={<Avatar src={`${data.customer?.avatar || "https://picsum.photos/200/300"}`}/>}
         content={renderType()}
         datetime={<Tooltip
             title={`Updated at: ${moment(data.createdAt).format("YYYY-MM-DD HH:mm:ss")}`}

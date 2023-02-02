@@ -66,7 +66,6 @@ const TicketList = ({query, onChangePage}) => {
             const listTickets = res.data.data;
 
             const ticketIds = listTickets.map(item => item.id);
-            console.log(ticketIds);
 
             //Run async
             loadingTagTickets(ticketIds);
@@ -131,7 +130,7 @@ const TicketList = ({query, onChangePage}) => {
                     <Space direction="vertical" size="small">
                         <Typography.Text>
                             <Link onClick={() => openCustomerDetail(row.customer?.id)}>
-                                <strong>{row.customer?.name || '---'}: </strong>
+                                <strong>{row.customer?.fullname || '---'}: </strong>
                             </Link>
                             {text}
                         </Typography.Text>

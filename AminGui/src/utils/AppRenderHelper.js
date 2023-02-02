@@ -57,14 +57,13 @@ export const renderInboxTimeWarning = (ticket, className = "") => {
         return <></>;
     }
 
-    if (!ticket.lrmTime) {
-        ticket.lrmTime = null;
-    }
-
 
     try {
         const lcmTime = moment(ticket.lcmTime);
-        const lrmTime = moment(ticket.lrmTime);
+        let lrmTime = moment();
+        if(ticket.lrmTime){
+            lrmTime = moment(ticket.lrmTime);
+        }
         const diff = lcmTime.diff(lrmTime);
         const duration = moment.duration(diff);
         const hours = duration.asHours();
@@ -74,12 +73,6 @@ export const renderInboxTimeWarning = (ticket, className = "") => {
                 Wait customer feedback
             </Typography.Text>;
         }
-
-        const nowTime = moment();
-        const duration2 = moment.duration(nowTime.diff(lcmTime));
-
-
-        console.log(hours, duration2.asHours());
 
         let title = "24h+";
         let color = "error";

@@ -3,6 +3,7 @@ import {updateOrCreateCustomer} from "../../services/CustomerService";
 import {MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_FB, PLATFORM_IG} from "../../appConst";
 import {updateOrCreateTicketComment} from "../../services/TicketService";
 import {updateOrCreateMessage} from "../../services/MessageService";
+import {getCommentDetail} from "../../services/GraphApiService";
 
 export const handleCommentArray = (id, time, changes) => {
     try {
@@ -49,38 +50,40 @@ const handleFeed = async (id, time, feed) => {
     }
 };
 
-const handleComment = async (platformId, time, comment) => {
+const processFeed = async (platformId, time, comment) => {
     try {
         let ticket = null;
         const {from, parent_id, comment_id, post_id, verb, message} = comment;
         const customer = await updateOrCreateCustomer(PLATFORM_FB, from.id);
         customer.name = from.name;
 
-        if(parent_id === post_id){
+        if (parent_id === post_id) {
             ticket = await updateOrCreateTicketComment(PLATFORM_FB, platformId, comment_id, customer.id, post_id);
-        }else{
+        } else {
             ticket = await updateOrCreateTicketComment(PLATFORM_FB, platformId, parent_id, customer.id, post_id);
         }
         const ticketMessage = await updateOrCreateMessage(PLATFORM_FB, comment_id);
         switch (verb) {
             case "add":
             case "edit":
+            case "edited":
                 ticketMessage.type = MESSAGE_TYPE_TEXT_ATTACHMENTS;
                 ticketMessage.ticketId = ticket.id;
                 ticketMessage.customerId = customer.id;
+                await ticketMessage.save();
                 await updateCommentDetailByApi(PLATFORM_FB, comment_id, ticketMessage);
                 break;
             case "delete":
                 ticketMessage.isDeleted = true;
                 ticketMessage.ticketId = ticket.id;
                 ticketMessage.customerId = customer.id;
+                await ticketMessage.save();
                 break;
             default:
                 console.log("Un-supported verb", verb);
                 break;
         }
 
-        ticketMessage.save();
         //Update first message ticket
         if (message) {
             if (!ticket.firstMessage) {
@@ -102,6 +105,81 @@ const handleComment = async (platformId, time, comment) => {
 
 };
 
-const updateCommentDetailByApi = async (platform, commentId, ticketMessage) => {
+const handleComment = async (platformId, time, comment) => {
+    try {
+        let ticket = null;
+        const {from, parent_id, comment_id, post_id, verb, message} = comment;
+        const customer = await updateOrCreateCustomer(PLATFORM_FB, from.id);
+        customer.name = from.name;
+
+        if (parent_id === post_id) {
+            ticket = await updateOrCreateTicketComment(PLATFORM_FB, platformId, comment_id, customer.id, post_id);
+        } else {
+            ticket = await updateOrCreateTicketComment(PLATFORM_FB, platformId, parent_id, customer.id, post_id);
+        }
+        const ticketMessage = await updateOrCreateMessage(PLATFORM_FB, comment_id);
+        switch (verb) {
+            case "add":
+            case "edit":
+            case "edited":
+                ticketMessage.type = MESSAGE_TYPE_TEXT_ATTACHMENTS;
+                ticketMessage.ticketId = ticket.id;
+                ticketMessage.customerId = customer.id;
+                await ticketMessage.save();
+                await updateCommentDetailByApi(comment_id, ticketMessage);
+                break;
+            case "delete":
+                ticketMessage.isDeleted = true;
+                ticketMessage.ticketId = ticket.id;
+                ticketMessage.customerId = customer.id;
+                await ticketMessage.save();
+                break;
+            default:
+                console.log("Un-supported verb", verb);
+                break;
+        }
+
+        //Update first message ticket
+        if (message) {
+            if (!ticket.firstMessage) {
+                ticket.firstMessage = message;
+                await ticket.save();
+            }
+        } else {
+            if (!ticket.firstMessage) {
+                ticket.firstMessage = "Sticker comment | Attachment comment";
+                await ticket.save();
+            }
+        }
+
+        //TODO Save post
+        console.log(ticketMessage);
+    } catch (e) {
+        throw e;
+    }
+
+};
+
+const updateCommentDetailByApi = async (commentId, ticketMessage) => {
     //TODO implement here
+    const commentData = await getCommentDetail(commentId);
+    const {message, attachment} = commentData;
+    let ticketData = ticketMessage.data ? JSON.parse(ticketMessage.data) : {};
+    console.log(message, attachment);
+    if(message){
+        ticketData = {
+            ...ticketData,
+            text: message,
+        }
+    }
+
+    if(attachment){
+        ticketData = {
+            ...ticketData,
+            attachment: attachment
+        }
+    }
+
+    ticketMessage.data = JSON.stringify(ticketData);
+    await ticketMessage.save();
 };

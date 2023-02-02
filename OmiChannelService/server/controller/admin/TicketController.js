@@ -3,9 +3,16 @@ import createError from 'http-errors';
 import db from "../../models";
 import queryStringConverter from "sequelize-querystring-converter";
 import {paginationDataResult, paginationQuery} from "../../helper/queryHelper";
-import {getTicketById} from "../../services/TicketService";
+import {getTicketById, replayFacebook, replayIg} from "../../services/TicketService";
 import {getTagById, getTagModel, getTagsByModelId, getTicketTagsByIds} from "../../services/TagService";
-import {CASE_STATUS_DONE, CASE_STATUS_PROCESS} from "../../helper/appConst";
+import {
+    CASE_STATUS_DONE,
+    CASE_STATUS_PROCESS,
+    PLATFORM_FB,
+    PLATFORM_IG,
+    TICKET_CASE_STATUS_PROCESSING
+} from "../../helper/appConst";
+import {getMessageByTicketId} from "../../services/MessageService";
 
 export default class TicketController extends BaseController {
     constructor() {
@@ -19,6 +26,10 @@ export default class TicketController extends BaseController {
 
         //Note function
         this.getRouter().post('/:id/note', this.addNote.bind(this));
+        //Message function
+        this.getRouter().get("/:id/messages", this.getMessages.bind(this));
+        //Reply function
+        this.getRouter().post(`/:id/reply`, this.replyTicket.bind(this));
         //Tag function
         this.getRouter().delete('/:id/tags/:tagId', this.removeTag.bind(this));
         this.getRouter().get('/:id/tags', this.getTags.bind(this));
@@ -32,7 +43,7 @@ export default class TicketController extends BaseController {
     async detail(req, res, next) {
         try {
             const {id} = req.params;
-            const model = await getTicketById(id, ["messages"]);
+            const model = await getTicketById(id);
             return res.json({
                 data: model
             })
@@ -213,9 +224,67 @@ export default class TicketController extends BaseController {
         }
     }
 
+    async getMessages(req, res, next) {
+        const {id} = req.params;
+        try {
+            const models = await getMessageByTicketId(id, [
+                {
+                    model: db.Customer,
+                    attributes: ["id", 'fullname', "avatar", "phone", "email"],
+                    as: "customer"
+                }
+            ]);
+            return res.json({
+                data: models
+            })
+        } catch (e) {
+            next(e);
+        }
+    };
+
     async replyTicket(req, res, next) {
         try {
+            const {id} = req.params;
+            console.log(id, req.body);
+            const {message, attachments} = req.body;
 
+            if(!message && (!attachments || attachments.length === 0)){
+                throw createError(400, `Data can not be null`);
+            }
+
+            //Get Ticket
+            const model = await getTicketById(id);
+            if (!model) {
+                throw createError(404, `Ticket ${id} not founded`);
+            }
+
+            let replyModel = null;
+            switch (model.platform) {
+                case PLATFORM_IG: {
+                    replyModel = await replayIg(model, {
+                        message, attachments
+                    });
+                    break;
+                }
+                case PLATFORM_FB: {
+                    replyModel = await replayFacebook(model, {
+                        message, attachments
+                    });
+                    break;
+                }
+                default:
+                    throw createError(400, `Platform ${model.platform} not supported`);
+            }
+
+            model.caseStatus = TICKET_CASE_STATUS_PROCESSING;
+            await model.save();
+
+            return res.json({
+                data: {
+                    replyModel,
+                    ticket: model
+                }
+            });
         } catch (e) {
             next(e);
         }

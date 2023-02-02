@@ -1,20 +1,14 @@
 import {
-    Avatar,
     Button,
     Form,
-    Comment,
     Skeleton,
-    Tooltip,
-    List,
     Input,
     Space,
-    Select,
     Row,
     Modal,
     Image,
-    Typography, Divider, Descriptions
+    Typography, Divider, Descriptions, message
 } from "antd";
-import moment from "moment";
 import React, {useEffect, useState, memo} from "react";
 import {
     RiSendPlaneLine,
@@ -24,10 +18,12 @@ import {
 } from "react-icons/ri";
 import MediaManager from "../../components/media-manager/MediaManager";
 import SearchTemplateInput from "../../components/SearchTemplateInput";
-import {useSelector} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {CASE_STATUS_DONE} from "../../../configs/appConfig";
 import {formatDate} from "../../../utils/StringHelper";
-import TicketComment from "./comment/TicketComment";
+import TicketCommentList from "./comment/TicketCommentList";
+import ApiHelper from "../../../utils/ApiHelper";
+import {updateStatus} from '../../../redux/ticket';
 
 const {TextArea} = Input;
 
@@ -38,6 +34,8 @@ const TicketConversation = ({loading}) => {
     const [selectImgList, setSelectImgList] = useState([]);
     const [data, setData] = useState(null);
     const [mediaLibVisible, setMediaLibVisible] = useState(false);
+    const [replyLoading, setReplyLoading] = useState(false);
+    const dispatch = useDispatch();
 
     const CommentForm = () => {
         return (<Form
@@ -61,15 +59,17 @@ const TicketConversation = ({loading}) => {
                     >
                         Add Attachment
                     </Button>
-                    {selectImgList.map(item => {
-                        return renderItem(item);
+                    {selectImgList.map((item, idx) => {
+                        return renderItem(item, idx);
                     })}
 
                 </Space>
             </Form.Item>
             <Row justify={"end"}>
                 <Space size='small'>
-                    <Button type="primary" icon={<RiSendPlaneLine className="remix-icon"/>}>
+                    <Button type="primary"
+                            loading={replyLoading}
+                            htmlType={"submit"} icon={<RiSendPlaneLine className="remix-icon"/>}>
                         Send
                     </Button>
                 </Space>
@@ -77,7 +77,7 @@ const TicketConversation = ({loading}) => {
         </Form>)
     };
 
-    const renderItem = (item) => {
+    const renderItem = (item, idx) => {
         let previewItem = null;
         switch (item.mime) {
             case "image/png":
@@ -124,7 +124,7 @@ const TicketConversation = ({loading}) => {
                 </div>;
         }
 
-        return <div className="hp-d-flex hp-d-flex-column hp-align-items-center">
+        return <div className="hp-d-flex hp-d-flex-column hp-align-items-center" key={`ui_${item.id}${idx}`}>
             {previewItem}
             <Button size="small"
                     danger
@@ -136,8 +136,32 @@ const TicketConversation = ({loading}) => {
         </div>
     };
 
-    const onReplyComment = () => {
-
+    const onReplyComment = async (values) => {
+        console.log(values, selectImgList);
+        try {
+            setReplyLoading(true);
+            const res = await ApiHelper().post(`/tickets/${ticket?.id}/reply`, {
+                message: values.message,
+                attachments: selectImgList.map(item => {
+                    return {
+                        path: item.path,
+                        mime: item.mime,
+                        name: item.name
+                    }
+                })
+            });
+            console.log(res.data);
+            message.success("Comment sent successful.");
+            if(res.data?.ticket?.caseStatus){
+                dispatch(updateStatus(res.data.ticket.caseStatus));
+            }
+            form.resetFields();
+        } catch (e) {
+            console.error(e);
+            message.error(e.message);
+        } finally {
+            setReplyLoading(false);
+        }
     };
 
     const onSelectTemplate = (val, obj) => {
@@ -156,60 +180,9 @@ const TicketConversation = ({loading}) => {
         setSelectImgList(selectImgList.filter(item => item.id !== id));
     };
 
-    const fakeData = [
-        {
-            author: "Dolores O'Riordan",
-            avatar: <Avatar src="https://picsum.photos/200/300"/>,
-            content: (
-                <p>
-                    We supply a series of design principles, practical patterns and high
-                    quality design resources (Sketch and Axure), to help people create
-                    their product prototypes beautifully and efficiently.
-                </p>
-            ),
-            datetime: (
-                <Tooltip
-                    title={moment().subtract(1, "days").format("YYYY-MM-DD HH:mm:ss")}
-                >
-                    <span>{moment().subtract(1, "days").fromNow()}</span>
-                </Tooltip>
-            ),
-        },
-        {
-            author: "Aeon Mall",
-            avatar: <Avatar src="https://picsum.photos/200/300"/>,
-            content: (
-                <p>
-                    We supply a series of design principles, practical patterns and high
-                    quality design resources (Sketch and Axure), to help people create
-                    their product prototypes beautifully and efficiently.
-                </p>
-            ),
-            datetime: (
-                <Tooltip
-                    title={moment().subtract(2, "days").format("YYYY-MM-DD HH:mm:ss")}
-                >
-                    <span>{moment().subtract(2, "days").fromNow()}</span>
-                </Tooltip>
-            ),
-        }
-    ];
-
-
     return (
         <Skeleton loading={loading} active>
-            <List
-                size="small"
-                className="comment-list"
-                itemLayout="horizontal"
-                dataSource={ticket?.messages || []}
-                renderItem={(item) => (
-                    <li>
-                        <TicketComment data={item}/>
-                    </li>
-                )}
-            />
-
+            {ticket && <TicketCommentList id={ticket.id}/>}
             {ticketStatus !== CASE_STATUS_DONE ? <CommentForm/> : (
                 <>
                     <Divider/>

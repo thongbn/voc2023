@@ -18,3 +18,5 @@ export const TICKET_TYPE_COMMENT = "comment";
 
 export const MESSAGE_TYPE_TEXT_ATTACHMENTS = "text_attachments";
 
+//
+export const FB_LONG_LIVE_TOKEN_KEY = "token-config";

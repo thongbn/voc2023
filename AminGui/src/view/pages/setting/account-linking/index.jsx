@@ -9,29 +9,49 @@ const tokenConfigKey = "token-config";
 const AccountLinking = () => {
 
     const [loadingSdk, setLoadingSdk] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [isFBLogged, setIsFbLogged] = useState(false);
-    const [authInformation, setAuthInformation] = useState("");
+    const [authInformation, setAuthInformation] = useState({});
     const [tokenInfos, setTokenInfos] = useState("");
+    const [omiConfig, setOmiConfig] = useState({});
+    const [longLiveToken, setLongLiveToken] = useState({});
 
     useEffect(() => {
-        initFacebookSdk().then(() => {
-            console.log("Loading success");
-            setLoadingSdk(false);
-            checkLoginStatus().catch(e => console.error(e));
-        }).catch(e => console.error(e));
-
         //Get current config
+        getOmiConfig().catch(e => console.error(e));
         getCurrentConfig().catch(e => console.error(e));
 
+
     }, []);
+
+    const getOmiConfig = async () => {
+        try {
+            const omiConfigRes = await ApiHelper().get(`/config/omi-config`);
+            console.log(omiConfigRes.data.data);
+            const cfg = omiConfigRes.data.data;
+            setOmiConfig(cfg);
+
+            const {facebook} = cfg;
+            const clientId = facebook.appId;
+
+            await initFacebookSdk(clientId);
+            console.log("Loading success");
+            setLoadingSdk(false);
+
+            checkLoginStatus().catch(e => console.error(e));
+
+        } catch (e) {
+            throw e;
+        }
+    };
 
     const getCurrentConfig = async () => {
         try {
             const res = await ApiHelper().get(`/config/${tokenConfigKey}`);
             console.log("Current config", res.data);
-            setTokenInfos(JSON.stringify(res.data));
+            setTokenInfos(res.data.data);
         } catch (e) {
-            message.error("Could not get config");
+            throw e;
         }
     };
 
@@ -40,7 +60,7 @@ const AccountLinking = () => {
             console.log(response.authResponse);
             if (response.status === 'connected') {
                 setIsFbLogged(true);
-                setAuthInformation(JSON.stringify(response.authResponse));
+                setAuthInformation(response.authResponse);
             } else {
                 console.log("Please log into this facebook.");
                 setIsFbLogged(false);
@@ -70,6 +90,42 @@ const AccountLinking = () => {
         });
     };
 
+    const getLongLiveToken = async () => {
+
+        try {
+            setIsLoading(true);
+            const {facebook} = omiConfig;
+            const clientId = facebook.appId;
+            const clientSecret = facebook.appSecret;
+
+            window.FB.api("/oauth/access_token", 'get', {
+                grant_type: "fb_exchange_token",
+                "client_id": clientId,
+                "client_secret": clientSecret,
+                "fb_exchange_token": authInformation.accessToken,
+            }, (response) => {
+                console.log(response);
+                setLongLiveToken(response);
+            });
+
+        } catch (e) {
+            message.error(e.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const saveLongLiveToken = async () => {
+        const res = await ApiHelper().post(`/config/${tokenConfigKey}`, {
+            data: {
+                ...tokenInfos,
+                llt: longLiveToken.access_token,
+            }
+        });
+        console.log(res.data.data);
+        setTokenInfos(res.data.data);
+    };
+
     const handleFacebookLogout = () => {
         window.FB.logout();
     };
@@ -92,14 +148,29 @@ const AccountLinking = () => {
                 <Card size={"small"}>
                     <Descriptions title={"Facebook"} bordered size={"small"} column={1}>
                         <Descriptions.Item label="Status">{renderLoginButton()}</Descriptions.Item>
-                        <Descriptions.Item label="User information">
-                            {authInformation}
+                        {authInformation && (
+                            <>
+                                <Descriptions.Item label="User information">
+                                    {JSON.stringify(authInformation)}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Step 1">
+                                    <Button loading={isLoading} onClick={() => getLongLiveToken()}>
+                                        Get Long Live Token
+                                    </Button>
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Long live token">
+                                    {JSON.stringify(longLiveToken)}
+                                </Descriptions.Item>
+                            </>
+                        )}
+                        <Descriptions.Item label="Omi config">
+                            {JSON.stringify(omiConfig)}
                         </Descriptions.Item>
                         <Descriptions.Item label="Setting">
-                            {tokenInfos}
+                            {JSON.stringify(tokenInfos)}
                         </Descriptions.Item>
-                        <Descriptions.Item label="Action">
-                            <Button>Save to Setting</Button>
+                        <Descriptions.Item label="Step 2">
+                            <Button onClick={() => saveLongLiveToken()}>Save to Setting</Button>
                         </Descriptions.Item>
                     </Descriptions>
                 </Card>

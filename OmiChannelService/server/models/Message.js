@@ -14,6 +14,11 @@ module.exports = (sequelize) => {
          */
         static associate(models) {
             // define association here
+            Message.hasOne(models.Customer, {
+                foreignKey: "id",
+                sourceKey: "customerId",
+                as: "customer"
+            });
         }
     }
 
