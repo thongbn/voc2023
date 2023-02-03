@@ -15,15 +15,17 @@ export const findCustomerByPlatformId = async (platform, platformId) => {
  *
  * @param {string} platform
  * @param {string} platformId
+ * @param {string} customerName
  * @returns {Customer}
  */
-export const updateOrCreateCustomer = async (platform, platformId) => {
+export const updateOrCreateCustomer = async (platform, platformId, customerName = "") => {
     //TODO Redis lock to create message
     let model = await findCustomerByPlatformId(platform, platformId);
     if (!model) {
         model = await db.Customer.build({
             platform,
-            platformId
+            platformId,
+            fullname: customerName
         });
         await model.save();
     }

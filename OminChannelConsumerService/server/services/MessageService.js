@@ -53,7 +53,6 @@ export const lockAndUpdateMessage = async (message, ticketId, rawId, data) => {
         }
 
         message.data = JSON.stringify(messData);
-        message.customerId = senderCustomer.id;
         message.ticketId = ticketId;
         message.rawId = rawId;
 

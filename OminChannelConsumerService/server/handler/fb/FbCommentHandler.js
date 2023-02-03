@@ -1,9 +1,9 @@
 import {createRawData} from "../../services/RawService";
 import {updateOrCreateCustomer} from "../../services/CustomerService";
-import {MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_FB, PLATFORM_IG} from "../../appConst";
-import {updateOrCreateTicketComment} from "../../services/TicketService";
+import {MESSAGE_TYPE_RATINGS, MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_FB, PLATFORM_IG} from "../../appConst";
+import {updateOrCreateTicketComment, updateOrCreateTicketRating} from "../../services/TicketService";
 import {updateOrCreateMessage} from "../../services/MessageService";
-import {getCommentDetail} from "../../services/GraphApiService";
+import {getCommentDetail, getOpenStoryDetail} from "../../services/GraphApiService";
 
 export const handleCommentArray = (id, time, changes) => {
     try {
@@ -32,6 +32,9 @@ const handleChange = async (id, time, change) => {
         case "feed":
             await handleFeed(id, time, value);
             break;
+        case "ratings":
+            await handleRating(id, time, value);
+            break;
         default:
             console.log("Un-supported field", field);
             break;
@@ -50,51 +53,72 @@ const handleFeed = async (id, time, feed) => {
     }
 };
 
-const processFeed = async (platformId, time, comment) => {
+const handleRating = async (id, time, rating) => {
     try {
-        let ticket = null;
-        const {from, parent_id, comment_id, post_id, verb, message} = comment;
-        const customer = await updateOrCreateCustomer(PLATFORM_FB, from.id);
-        customer.name = from.name;
-
-        if (parent_id === post_id) {
-            ticket = await updateOrCreateTicketComment(PLATFORM_FB, platformId, comment_id, customer.id, post_id);
-        } else {
-            ticket = await updateOrCreateTicketComment(PLATFORM_FB, platformId, parent_id, customer.id, post_id);
+        const {item} = rating;
+        switch (item) {
+            case "rating":
+                await handleItemRating(id, time, rating);
+                break;
+            case "comment":
+                await handleItemCommentRating(id, time, rating);
+                break;
+            default:
+                console.log("Un-supported item", item);
         }
+
+
+    } catch (e) {
+
+    }
+};
+
+const handleItemCommentRating = async (id, time, rating) => {
+    try {
+        let ticket;
+        const {
+            comment_id,
+            open_graph_story_id,
+            message,
+            sender_id,
+            verb
+        } = rating;
+
+        const customer = await updateOrCreateCustomer(PLATFORM_FB, sender_id);
+
+        ticket = await updateOrCreateTicketRating(PLATFORM_FB, id, open_graph_story_id, customer.id);
+
         const ticketMessage = await updateOrCreateMessage(PLATFORM_FB, comment_id);
+
         switch (verb) {
             case "add":
-            case "edit":
-            case "edited":
+            case "edit": {
                 ticketMessage.type = MESSAGE_TYPE_TEXT_ATTACHMENTS;
                 ticketMessage.ticketId = ticket.id;
                 ticketMessage.customerId = customer.id;
                 await ticketMessage.save();
-                await updateCommentDetailByApi(PLATFORM_FB, comment_id, ticketMessage);
+                await updateCommentDetailByApi(comment_id, ticketMessage);
                 break;
-            case "delete":
+            }
+            case "delete": {
                 ticketMessage.isDeleted = true;
                 ticketMessage.ticketId = ticket.id;
                 ticketMessage.customerId = customer.id;
                 await ticketMessage.save();
                 break;
+            }
             default:
                 console.log("Un-supported verb", verb);
-                break;
+                return;
         }
 
-        //Update first message ticket
-        if (message) {
-            if (!ticket.firstMessage) {
+        if (!ticket.firstMessage) {
+            if (message) {
                 ticket.firstMessage = message;
-                await ticket.save();
+            } else {
+                ticket.firstMessage = "Un-get reviewer-text";
             }
-        } else {
-            if (!ticket.firstMessage) {
-                ticket.firstMessage = "Sticker comment | Attachment comment";
-                await ticket.save();
-            }
+            await ticket.save();
         }
 
         //TODO Save post
@@ -102,7 +126,52 @@ const processFeed = async (platformId, time, comment) => {
     } catch (e) {
         throw e;
     }
+};
 
+const handleItemRating = async (id, time, rating) => {
+    try {
+        let ticket;
+        const {review_text, open_graph_story_id, recommendation_type, reviewer_id, reviewer_name, verb} = rating;
+
+        const customer = await updateOrCreateCustomer(PLATFORM_FB, reviewer_id, reviewer_name);
+        ticket = await updateOrCreateTicketRating(PLATFORM_FB, id, open_graph_story_id, customer.id);
+        const ticketMessage = await updateOrCreateMessage(PLATFORM_FB, reviewer_id);
+        switch (verb) {
+            case "add":
+                //TODO truong hop case edit ktr lai case "edit":
+            {
+                ticketMessage.type = MESSAGE_TYPE_RATINGS;
+                ticketMessage.ticketId = ticket.id;
+                ticketMessage.customerId = customer.id;
+                ticketMessage.data = JSON.stringify({
+                    text: review_text,
+                    recommendationType: recommendation_type
+                });
+                await ticketMessage.save();
+                break;
+            }
+            case "delete": {
+                ticketMessage.isDeleted = true;
+                ticketMessage.ticketId = ticket.id;
+                ticketMessage.customerId = customer.id;
+                await ticketMessage.save();
+                break;
+            }
+            default:
+                console.log("Un-supported verb", verb);
+                return;
+        }
+
+        //Update first message ticket
+        if (!ticket.firstMessage) {
+            ticket.firstMessage = review_text;
+            await ticket.save();
+        }
+        //TODO Save post
+        console.log(ticketMessage);
+    } catch (e) {
+        throw e;
+    }
 };
 
 const handleComment = async (platformId, time, comment) => {
@@ -136,7 +205,7 @@ const handleComment = async (platformId, time, comment) => {
                 break;
             default:
                 console.log("Un-supported verb", verb);
-                break;
+                return;
         }
 
         //Update first message ticket
@@ -151,7 +220,6 @@ const handleComment = async (platformId, time, comment) => {
                 await ticket.save();
             }
         }
-
         //TODO Save post
         console.log(ticketMessage);
     } catch (e) {
@@ -166,14 +234,14 @@ const updateCommentDetailByApi = async (commentId, ticketMessage) => {
     const {message, attachment} = commentData;
     let ticketData = ticketMessage.data ? JSON.parse(ticketMessage.data) : {};
     console.log(message, attachment);
-    if(message){
+    if (message) {
         ticketData = {
             ...ticketData,
             text: message,
         }
     }
 
-    if(attachment){
+    if (attachment) {
         ticketData = {
             ...ticketData,
             attachment: attachment

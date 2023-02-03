@@ -1,6 +1,6 @@
 import db from "../models";
 import createError from "http-errors";
-import {PLATFORM_IG, TICKET_TYPE_COMMENT, TICKET_TYPE_MESSAGE} from "../helper/appConst";
+import {PLATFORM_IG, TICKET_TYPE_COMMENT, TICKET_TYPE_MESSAGE, TICKET_TYPE_RATINGS} from "../helper/appConst";
 import {graphApiPost} from "../helper/graph-helper";
 import {getFacebookSettings} from "./ConfigService";
 
@@ -23,7 +23,8 @@ export const replayFacebook = async (ticket, data) => {
         case TICKET_TYPE_MESSAGE: {
             return await replyFacebookMessage(ticket, data);
         }
-        case TICKET_TYPE_COMMENT: {
+        case TICKET_TYPE_COMMENT:
+        case TICKET_TYPE_RATINGS: {
             return await replyFacebookComment(ticket, data);
         }
         default:
@@ -101,7 +102,7 @@ export const replyIgComment = async (ticket, data) => {
     }
 
     const res = await graphApiPost(
-        `/${ticket.cId}/replies`, null, "fb", {
+        `/${ticket.cId}/replies`, null, "page", {
             message
         });
 
@@ -159,7 +160,7 @@ export const replyIgMessage = async (ticket, data) => {
         try {
             const res = await graphApiPost(
                 `/${fbSettings.pageId}/messages`,
-                {}, "fb", {
+                {}, "page", {
                     ...formsDatas[i]
                 });
             returnData.push(res);

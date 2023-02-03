@@ -1,6 +1,6 @@
 import {Op} from "sequelize";
 import db from "../models"
-import {TICKET_CASE_STATUS_DONE, TICKET_CASE_STATUS_NEW, TICKET_TYPE_COMMENT} from "../appConst";
+import {TICKET_CASE_STATUS_DONE, TICKET_CASE_STATUS_NEW, TICKET_TYPE_COMMENT, TICKET_TYPE_RATINGS} from "../appConst";
 
 export const findLatestAndUnresovledTicketByCustomerId = async (platform, platformId, type, customerId) => {
     return await db.Ticket.findOne({
@@ -73,6 +73,30 @@ export const updateOrCreateTicketComment = async (platform, platformId, cId, cus
             customerId,
             mediaId,
             type: TICKET_TYPE_COMMENT,
+            caseStatus: TICKET_CASE_STATUS_NEW,
+        });
+        await model.save();
+    }
+    return model;
+};
+
+export const updateOrCreateTicketRating = async (platform, platformId, openGraphStory, customerId) => {
+    let model = await db.Ticket.findOne({
+        where: {
+            platform,
+            platformId,
+            type: TICKET_TYPE_RATINGS,
+            cId: openGraphStory
+        }
+    });
+    if (!model) {
+        model = await db.Ticket.build({
+            platform,
+            platformId,
+            cId: openGraphStory,
+            customerId,
+            mediaId: openGraphStory,
+            type: TICKET_TYPE_RATINGS,
             caseStatus: TICKET_CASE_STATUS_NEW,
         });
         await model.save();

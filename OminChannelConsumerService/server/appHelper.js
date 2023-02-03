@@ -1,6 +1,6 @@
-export const createConversationId = (sender, receiption) => {
-    if(sender.id > receiption.id){
-        return `${sender.id}_${receiption.id}`;
+export const createConversationId = (sender, receiver) => {
+    if(sender.id > receiver.id){
+        return `${sender.id}_${receiver.id}`;
     }
-    return `${receiption.id}_${sender.id}`;
+    return `${receiver.id}_${sender.id}`;
 }

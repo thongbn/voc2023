@@ -85,59 +85,58 @@ export const handleTextAndAttachmentMessage = async (platformId, messaging, rawM
     if (!sender || !recipient) {
         throw new Error("handleTextAndAttachmentMessage: sender or recipient null");
     }
-    //UPDATE OR SAVE CUSTOMER
-    const c1 = updateOrCreateCustomer(PLATFORM_FB, sender.id);
-    const c2 = updateOrCreateCustomer(PLATFORM_FB, recipient.id);
-
-    const [senderCustomer, receiverCustomer] = await Promise.all([c1, c2]);
-
     //const senderCustomer = await updateOrCreateCustomer(PLATFORM_IG, sender.id);
     //const reciptientCustomer = await updateOrCreateCustomer(PLATFORM_IG, recipient.id);
+    // console.log(senderCustomer, receiverCustomer);
     try {
+        //UPDATE OR SAVE CUSTOMER
+        const c1 = updateOrCreateCustomer(PLATFORM_FB, sender.id);
+        const c2 = updateOrCreateCustomer(PLATFORM_FB, recipient.id);
+
+        const [senderCustomer, receiverCustomer] = await Promise.all([c1, c2]);
         //TRANSACTION HERE
-        const messages = await db.sequelize.transaction(async (t) => {
-            let messages;
-            //FIND OR CREATE OPEN TICKET
-            const ticket = await updateOrCreateTicket(PLATFORM_FB
-                , platformId
-                , TICKET_TYPE_MESSAGE
-                , createConversationId(senderCustomer, receiverCustomer)
-                , senderCustomer.id
-            );
+        //FIND OR CREATE OPEN TICKET
+        console.log("create Ticket");
+        const ticket = await updateOrCreateTicket(PLATFORM_FB
+            , platformId
+            , TICKET_TYPE_MESSAGE
+            , createConversationId(senderCustomer, receiverCustomer)
+            , senderCustomer.id
+        );
 
-            //SAVE MESSAGE FOR TICKET
-            const textMessage = await updateOrCreateMessage(PLATFORM_FB, mid);
-            textMessage.type = MESSAGE_TYPE_TEXT_ATTACHMENTS;
+        console.log("Ticket success");
+        //SAVE MESSAGE FOR TICKET
+        const textMessage = await updateOrCreateMessage(PLATFORM_FB, mid);
+        textMessage.type = MESSAGE_TYPE_TEXT_ATTACHMENTS;
+        textMessage.customerId = senderCustomer.id;
 
-            await lockAndUpdateMessage(textMessage, ticket.id, rawMessage.id, message);
+        await lockAndUpdateMessage(textMessage, ticket.id, rawMessage.id, message);
 
-            //TODO Lock and update ticket here
-            if (!ticket.firstMessage) {
-                ticket.firstMessage = text ?
-                    text :
-                    (attachments ? "Customer send Attachment" : "Customer send unsported type");
-            }
+        //TODO Lock and update ticket here
+        if (!ticket.firstMessage) {
+            ticket.firstMessage = text ?
+                text :
+                (attachments ? "Customer send Attachment" : "Customer send unsported type");
+        }
 
-            if (!is_echo) {
-                ticket.lcm = text;
-            }
+        if (!is_echo) {
+            ticket.lcm = text;
+        }
 
-            //Update lrm, lcm time
-            if (is_echo) {
-                ticket.lrmTime = new Date();
-            } else {
-                ticket.lcmTime = new Date(timestamp);
-            }
+        //Update lrm, lcm time
+        if (is_echo) {
+            ticket.lrmTime = new Date();
+        } else {
+            ticket.lcmTime = new Date(timestamp);
+        }
 
-            await ticket.save();
+        await ticket.save();
 
-            //TODO xử lý quick_reply, reply_to
+        //TODO xử lý quick_reply, reply_to
 
-            messages = textMessage;
-            return messages;
-        });
-        console.log(messages);
+        return textMessage;
     } catch (e) {
+        console.error(e);
         throw e;
     }
 };

@@ -31,7 +31,7 @@ export const graphApiGet = async (path, queryObj, messTokenType = "fb") => {
     }
 };
 
-export const graphApiPost = async (path, data, messTokenType = "fb", queryObj= {}) => {
+export const graphApiPost = async (path, data, messTokenType = "page", queryObj= {}) => {
     let messToken = "";
     switch (messTokenType) {
         case "ig":

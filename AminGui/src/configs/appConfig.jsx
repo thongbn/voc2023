@@ -30,7 +30,7 @@ export const TRANS_PAID_STATUS = {
 
 export const CASE_TYPE_MESSAGE = "message";
 export const CASE_TYPE_COMMENT = "comment";
-export const CASE_TYPE_RATING = "rating";
+export const CASE_TYPE_RATING = "ratings";
 export const CASE_TYPE_CUSTOM = "custom";
 export const CASE_TYPE_FEEDBACK = "feedback";
 export const CASE_TYPES = {
@@ -40,7 +40,7 @@ export const CASE_TYPES = {
     comment: {
         name: "Comment"
     },
-    rating: {
+    ratings: {
         name: "Rating"
     },
     custom: {
@@ -94,6 +94,7 @@ export const CASE_STATUS = {
 };
 
 export const MESSAGE_TYPE_TEXT_ATTACHMENT = "text_attachments";
+export const MESSAGE_TYPE_RATINGS = "ratings";
 export const MESSAGE_TYPE = {
 
 };

@@ -15,6 +15,7 @@ const AccountLinking = () => {
     const [tokenInfos, setTokenInfos] = useState("");
     const [omiConfig, setOmiConfig] = useState({});
     const [longLiveToken, setLongLiveToken] = useState({});
+    const [pageToken, setPageToken] = useState({});
 
     useEffect(() => {
         //Get current config
@@ -73,7 +74,7 @@ const AccountLinking = () => {
             console.log(response);
             if (response.authResponse) {
                 console.log('Welcome!  Fetching your information.... ');
-                setAuthInformation(JSON.stringify(response.authResponse));
+                setAuthInformation(response.authResponse);
             }
         }, {
             scope: ['email'
@@ -82,10 +83,12 @@ const AccountLinking = () => {
                 , 'instagram_manage_insights'
                 , 'pages_manage_engagement'
                 , 'pages_manage_metadata'
+                , 'pages_manage_posts'
                 , 'pages_messaging'
+                , 'pages_read_engagement'
+                , 'pages_read_user_content'
                 , 'pages_show_list'
                 , 'public_profile'
-                , 'pages_read_engagement'
             ].join(",")
         });
     };
@@ -115,11 +118,34 @@ const AccountLinking = () => {
         }
     };
 
+    const getPageAccessToken = async () => {
+
+        try {
+            setIsLoading(true);
+            const {facebook} = omiConfig;
+            const pageId = facebook.pageId;
+            const clientSecret = facebook.appSecret;
+
+            window.FB.api(`/${pageId}`, 'get', {
+                "fields": "access_token",
+                "access_token": longLiveToken.access_token,
+            }, (response) => {
+                console.log(response);
+                setPageToken(response);
+            });
+
+        } catch (e) {
+            message.error(e.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const saveLongLiveToken = async () => {
         const res = await ApiHelper().post(`/config/${tokenConfigKey}`, {
             data: {
                 ...tokenInfos,
-                llt: longLiveToken.access_token,
+                llt: pageToken.access_token,
             }
         });
         console.log(res.data.data);
@@ -161,6 +187,14 @@ const AccountLinking = () => {
                                 <Descriptions.Item label="Long live token">
                                     {JSON.stringify(longLiveToken)}
                                 </Descriptions.Item>
+                                <Descriptions.Item label="Step 2">
+                                    <Button loading={isLoading} onClick={() => getPageAccessToken()}>
+                                        Exchange page token
+                                    </Button>
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Page token">
+                                    {JSON.stringify(pageToken)}
+                                </Descriptions.Item>
                             </>
                         )}
                         <Descriptions.Item label="Omi config">
@@ -169,7 +203,7 @@ const AccountLinking = () => {
                         <Descriptions.Item label="Setting">
                             {JSON.stringify(tokenInfos)}
                         </Descriptions.Item>
-                        <Descriptions.Item label="Step 2">
+                        <Descriptions.Item label="Step 3">
                             <Button onClick={() => saveLongLiveToken()}>Save to Setting</Button>
                         </Descriptions.Item>
                     </Descriptions>

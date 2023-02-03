@@ -174,6 +174,7 @@ export const handleTextAndAttachmentMessage = async (igId, messaging, rawMessage
         });
         console.log(messages);
     } catch (e) {
+        console.error(e);
         throw e;
     }
 };

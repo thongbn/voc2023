@@ -32,7 +32,6 @@ const TicketConversation = ({loading}) => {
     const {ticket, ticketStatus} = useSelector(({ticket}) => ticket);
     const [form] = Form.useForm();
     const [selectImgList, setSelectImgList] = useState([]);
-    const [data, setData] = useState(null);
     const [mediaLibVisible, setMediaLibVisible] = useState(false);
     const [replyLoading, setReplyLoading] = useState(false);
     const dispatch = useDispatch();

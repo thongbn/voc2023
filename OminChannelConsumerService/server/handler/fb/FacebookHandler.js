@@ -10,10 +10,10 @@ export default class FacebookHandler extends FBBaseHandler {
     }
 
     handleItem(item) {
-        const {id, time, messaging, changes} = item;
+        const {id, time, standby, changes} = item;
         //TODO hop_context
-        if (messaging) {
-            this.handleMessagingArray(id, time, messaging);
+        if (standby) {
+            this.handleMessagingArray(id, time, standby);
         } else if (changes) {
             handleCommentArray(id, time, changes);
         } else {
@@ -71,6 +71,4 @@ export default class FacebookHandler extends FBBaseHandler {
             throw e;
         }
     }
-
-
 }

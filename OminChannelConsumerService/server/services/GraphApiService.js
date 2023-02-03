@@ -33,3 +33,20 @@ export const getCommentDetail = async (commentId) => {
         console.error(url, e);
     }
 };
+
+export const getOpenStoryDetail = async (osid, customParams = {}) => {
+    const getToken = await getFbMessToken();
+    const url = `${baseApi}/${osid}`;
+    try{
+        const res = await axios.get(url, {
+            params: {
+                "access_token": getToken,
+                ...customParams
+            }
+        });
+        console.log("getOpenStoryDetail", JSON.stringify(res.data));
+        return res.data;
+    }catch (e) {
+        console.error(url, e);
+    }
+};

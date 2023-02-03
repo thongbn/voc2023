@@ -20,5 +20,6 @@ export const TICKET_CASE_STATUS_DONE = "3_done";
 
 export const TICKET_TYPE_MESSAGE = "message";
 export const TICKET_TYPE_COMMENT = "comment";
+export const TICKET_TYPE_RATINGS = "ratings";
 
 export const MESSAGE_TYPE_TEXT_ATTACHMENTS = "text_attachments";
