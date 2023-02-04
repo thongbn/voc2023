@@ -25,7 +25,7 @@ const handleComment = async (platformId, time, value) => {
         const {from, media, id, parent_id, text} = value;
         //Truong hop co parent_id --> tim ticket tuong ung luu media id vao ticket
         let ticket = null;
-        const customer = await updateOrCreateCustomer(PLATFORM_IG, from.id);
+        const customer = await updateOrCreateCustomer(PLATFORM_IG, from.id, from.username);
         if (parent_id) {
             ticket = await updateOrCreateTicketComment(PLATFORM_IG, platformId, parent_id, customer.id, media.id);
         } else {

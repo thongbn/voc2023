@@ -133,9 +133,15 @@ const handleItemRating = async (id, time, rating) => {
         let ticket;
         const {review_text, open_graph_story_id, recommendation_type, reviewer_id, reviewer_name, verb} = rating;
 
-        const customer = await updateOrCreateCustomer(PLATFORM_FB, reviewer_id, reviewer_name);
+        if (['add', 'delete'].findIndex(item => item === verb) < 0) {
+            console.log("Un-supported verb", verb);
+            return;
+        }
+
+        const customer = await updateOrCreateCustomer(PLATFORM_FB, reviewer_id, reviewer_name, false);
         ticket = await updateOrCreateTicketRating(PLATFORM_FB, id, open_graph_story_id, customer.id);
         const ticketMessage = await updateOrCreateMessage(PLATFORM_FB, reviewer_id);
+
         switch (verb) {
             case "add":
                 //TODO truong hop case edit ktr lai case "edit":
@@ -151,10 +157,12 @@ const handleItemRating = async (id, time, rating) => {
                 break;
             }
             case "delete": {
-                ticketMessage.isDeleted = true;
-                ticketMessage.ticketId = ticket.id;
-                ticketMessage.customerId = customer.id;
-                await ticketMessage.save();
+                if (ticketMessage.customerId === customer.id) {
+                    ticketMessage.isDeleted = true;
+                    ticketMessage.ticketId = ticket.id;
+                    ticketMessage.customerId = customer.id;
+                    await ticketMessage.save();
+                }
                 break;
             }
             default:

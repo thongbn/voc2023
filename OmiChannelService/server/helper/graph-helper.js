@@ -1,5 +1,6 @@
 import {getFbLLTToken, getFbMessToken, getIgMessToken} from "../services/ConfigService";
 import axios from "axios";
+import createError from "http-errors";
 
 const getBaseUrl = () => {
     return process.env.GRAPH_API_URL;
@@ -54,7 +55,7 @@ export const graphApiPost = async (path, data, messTokenType = "page", queryObj=
         console.log(res.data);
         return res.data;
     } catch (e) {
-        console.error(path, messToken, data, e.message);
+        console.error(path, messToken, data, queryObj, e.message, e.response.data);
         throw e;
     }
 };

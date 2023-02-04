@@ -1,6 +1,13 @@
 import db from "../models";
 import createError from "http-errors";
-import {PLATFORM_IG, TICKET_TYPE_COMMENT, TICKET_TYPE_MESSAGE, TICKET_TYPE_RATINGS} from "../helper/appConst";
+import {
+    MESSAGE_TYPE_TEXT_ATTACHMENTS,
+    PLATFORM_FB,
+    PLATFORM_IG,
+    TICKET_TYPE_COMMENT,
+    TICKET_TYPE_MESSAGE,
+    TICKET_TYPE_RATINGS
+} from "../helper/appConst";
 import {graphApiPost} from "../helper/graph-helper";
 import {getFacebookSettings} from "./ConfigService";
 
@@ -92,7 +99,102 @@ export const replyFacebookComment = async (ticket, data) => {
 };
 
 export const replyFacebookMessage = async (ticket, data) => {
+    const {message, attachments} = data;
+    if (!message && (!attachments || attachments.length === 0)) {
+        throw createError(400, `Message or attachment should not be null`);
+    }
 
+    let customer = await db.Customer.findOne({
+        where: {
+            id: ticket.customerId,
+            platform: PLATFORM_FB,
+        },
+        attributes: ['id', 'platformId']
+    });
+
+    if (!customer || !customer.platformId) {
+        throw createError(400, `Customer not found`);
+    }
+
+    const fbSettings = await getFacebookSettings();
+    if (!fbSettings || !fbSettings.pageId) {
+        throw createError(400, `PageId not found`);
+    }
+
+    let textMessages = [];
+    let returnData = [];
+    let errorDatas = [];
+    let formsDatas = [];
+    if (message) {
+        let textMessage = db.Message.build({
+            ticketId: ticket.id,
+            platform: PLATFORM_FB,
+            type: MESSAGE_TYPE_TEXT_ATTACHMENTS,
+            data: JSON.stringify({text: message})
+        });
+        await textMessage.save();
+
+        let messageData = {
+            recipient: `{"id": "${customer.platformId}"}`,
+            message: `{
+                "text": "${message}",
+                "metadata":"${textMessage.id}"
+            }`,
+            message_type: "UPDATE",
+        };
+        formsDatas.push(messageData);
+        textMessages.push(textMessage);
+    }
+
+    for (let i = 0; i < attachments.length; i++) {
+        let textMessage = db.Message.build({
+            ticketId: ticket.id,
+            platform: PLATFORM_FB,
+            type: MESSAGE_TYPE_TEXT_ATTACHMENTS,
+            data: JSON.stringify({text: message})
+        });
+        await textMessage.save();
+
+        const item = attachments[i];
+        formsDatas.push({
+            recipient: `{"id": "${customer.platformId}"}`,
+            message: `{
+                    "metadata":"${textMessage.id}",
+                    'attachment':{
+                        'type': '${getIgTypeByMime(item.mime)}',
+                        'payload': {'url':'${process.env.RESOURCE_BASE_URL}${item.path}'}
+                    }
+                }`,
+            message_type: "UPDATE"
+        });
+        textMessages.push(textMessage);
+    }
+
+    for (let i = 0; i < formsDatas.length; i++) {
+        try {
+            const res = await graphApiPost(
+                `/${fbSettings.pageId}/messages`,
+                {}, "page", {
+                    ...formsDatas[i]
+                });
+            returnData.push(res);
+        } catch (e) {
+            console.error(e.message, e.response.data);
+            if (textMessages[i]) {
+                textMessages[i].other = JSON.stringify({
+                    "error": e.response.data || e.message
+                });
+                textMessages[i].save();
+            }
+            errorDatas.push(e.response?.data ? e.response.data : e.message);
+        }
+    }
+
+    return {
+        data: returnData,
+        textMessages,
+        errors: errorDatas
+    };
 };
 
 export const replyIgComment = async (ticket, data) => {
@@ -100,7 +202,6 @@ export const replyIgComment = async (ticket, data) => {
     if (!message) {
         throw createError(400, `Message should not be null`);
     }
-
     const res = await graphApiPost(
         `/${ticket.cId}/replies`, null, "page", {
             message
@@ -127,7 +228,7 @@ export const replyIgMessage = async (ticket, data) => {
     }
 
     const fbSettings = await getFacebookSettings();
-    if(!fbSettings || !fbSettings.pageId){
+    if (!fbSettings || !fbSettings.pageId) {
         throw createError(400, `PageId not found`);
     }
 
@@ -165,8 +266,8 @@ export const replyIgMessage = async (ticket, data) => {
                 });
             returnData.push(res);
         } catch (e) {
-            console.error(e);
-            errorDatas.push(e.message);
+            console.error(e.message, e.response.data);
+            errorDatas.push(e.response?.data || e.message);
         }
     }
 

@@ -16,9 +16,10 @@ export const findCustomerByPlatformId = async (platform, platformId) => {
  * @param {string} platform
  * @param {string} platformId
  * @param {string} customerName
+ * @param {boolean} updateViaApi
  * @returns {Customer}
  */
-export const updateOrCreateCustomer = async (platform, platformId, customerName = "") => {
+export const updateOrCreateCustomer = async (platform, platformId, customerName = "", updateViaApi = true) => {
     //TODO Redis lock to create message
     let model = await findCustomerByPlatformId(platform, platformId);
     if (!model) {
@@ -29,16 +30,17 @@ export const updateOrCreateCustomer = async (platform, platformId, customerName 
         });
         await model.save();
     }
-
     //TODO Update User information from psId
-    switch (platform) {
-        case PLATFORM_FB: {
-            updateModelFromFb(platformId, model).catch(e => console.error(e));
-            break;
+    if(updateViaApi){
+        switch (platform) {
+            case PLATFORM_FB: {
+                updateModelFromFb(platformId, model).catch(e => console.error(e));
+                break;
+            }
+            case PLATFORM_IG:
+                updateModelFromIg(platformId, model).catch(e => console.error(e));
+                break;
         }
-        case PLATFORM_IG:
-            updateModelFromIg(platformId, model).catch(e => console.error(e));
-            break;
     }
 
     return model;

@@ -150,13 +150,12 @@ const TicketConversation = ({loading}) => {
                 })
             });
             console.log(res.data);
-            message.success("Comment sent successful.");
             if (res.data?.ticket?.caseStatus) {
                 dispatch(updateStatus(res.data.ticket.caseStatus));
             }
             if (res.data?.replyModel?.errors) {
                 res.data?.replyModel?.errors.map(item => {
-                    message.error(item);
+                    message.error(item.error?.message || item.message || item);
                 });
             }
             form.resetFields();
