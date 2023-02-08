@@ -1,7 +1,7 @@
 import {getFbMessToken} from "./ConfigService";
 import axios from "axios";
 
-const baseApi = "https://graph.facebook.com";
+const baseApi = process.env.FB_GRAPH_API || "https://graph.facebook.com";
 
 export const getCustomerInfoViaPsId = async (psid) => {
     const getToken = await getFbMessToken();
