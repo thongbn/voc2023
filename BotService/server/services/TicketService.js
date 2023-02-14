@@ -1,7 +1,14 @@
-import {Op} from "sequelize";
+import { Op } from "sequelize";
 import db from "../models"
-import {TICKET_CASE_STATUS_DONE, TICKET_CASE_STATUS_NEW, TICKET_TYPE_COMMENT, TICKET_TYPE_RATINGS} from "../appConst";
-import KaffkaClient from "../KaffkaClient";
+import { TICKET_CASE_STATUS_DONE, TICKET_CASE_STATUS_NEW, TICKET_TYPE_COMMENT, TICKET_TYPE_RATINGS } from "../appConst";
+
+export const findTicketById = async (id) => {
+    return await db.Ticket.findOne({
+        where: {
+            id
+        }
+    });
+}
 
 export const findLatestAndUnresovledTicketByCustomerId = async (platform, platformId, type, customerId) => {
     return await db.Ticket.findOne({
@@ -44,7 +51,7 @@ export const updateOrCreateTicket = async (platform, platformId, type, cId, cust
     //TODO Redis lock to customer ticket to find
     let model = await findLatestAndUnresovledTicketByUniqueId(platform, platformId, type, cId);
     if (!model) {
-        model = db.Ticket.build({
+        model = await db.Ticket.build({
             platform,
             platformId,
             cId,
@@ -91,7 +98,7 @@ export const updateOrCreateTicketRating = async (platform, platformId, openGraph
         }
     });
     if (!model) {
-        model = db.Ticket.build({
+        model = await db.Ticket.build({
             platform,
             platformId,
             cId: openGraphStory,

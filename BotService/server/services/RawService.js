@@ -11,7 +11,7 @@ import db from "../models"
  */
 export const createRawData = async (platform, platformId, ts, type, message) => {
     try {
-        const model = db.RawData.build({
+        const model = await db.RawData.build({
             platform,
             platformId,
             ts: new Date(ts),

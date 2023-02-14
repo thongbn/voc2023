@@ -3,6 +3,7 @@ import {updateOrCreateCustomer} from "../../services/CustomerService";
 import {updateOrCreateTicket} from "../../services/TicketService";
 import {MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_FB, TICKET_TYPE_MESSAGE} from "../../appConst";
 import {createConversationId} from "../../appHelper";
+import KaffkaClient from "../../KaffkaClient";
 
 export const handlePostback = async (messaging) => {
     //TODO postback
@@ -117,6 +118,11 @@ export const handleTextAndAttachmentMessage = async (platformId, messaging, rawM
             ticket.firstMessage = text ?
                 text :
                 (attachments ? "Customer send Attachment" : "Customer send unsported type");
+            //Gui thong tin den bot service
+            KaffkaClient.sendFacebook({
+                ticketId: ticket.id,
+                messageId: textMessage.id,
+            });
         }
 
         if (!is_echo) {

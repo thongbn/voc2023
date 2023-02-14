@@ -23,7 +23,7 @@ export const updateOrCreateCustomer = async (platform, platformId, customerName 
     //TODO Redis lock to create message
     let model = await findCustomerByPlatformId(platform, platformId);
     if (!model) {
-        model = db.Customer.build({
+        model = await db.Customer.build({
             platform,
             platformId,
             fullname: customerName

@@ -4,11 +4,9 @@ export const PLATFORM_ZL = "zl";
 
 export const IG_POSTBACK = "postback";
 export const IG_MESSAGE = "message";
-export const IG_QUICK_REPLY = "quick-reply";
 
 export const FB_POSTBACK = "postback";
 export const FB_MESSAGE = "message";
-export const FB_QUICK_REPLY = "quick-reply";
 
 //TICKET CONSTANTS
 export const TICKET_CASE_STATUS_NEW = "1_new";
@@ -24,3 +22,7 @@ export const MESSAGE_TYPE_RATINGS = "ratings";
 
 //
 export const FB_LONG_LIVE_TOKEN_KEY = "token-config";
+
+BUTTON_LISTS_QUICK_REPLIES = "quick_replies";
+BUTTON_LISTS_BUTTONS = "buttons";
+BUTTON_LISTS_TEXT = "texts";
