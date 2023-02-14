@@ -21,7 +21,7 @@ export default class FacebookHandler extends BotHandler {
         const [ticket, message] = await Promise.all([p1, p2]);
 
         if (!ticket || !message) {
-            throw new Error("Ticket, or message not founded", ticketId, messageId);
+            throw new Error(`Ticket, or message not founded: ${ticketId}, ${messageId}`);
         }
 
         if (ticket.caseStatus === TICKET_CASE_STATUS_DONE) {
@@ -50,12 +50,10 @@ export default class FacebookHandler extends BotHandler {
 
         const customer = getCustomerById(ticket.customerId);
         if (!customer) {
-            throw new Error(`Ticket customer not found`, ticket.id, ticket.customerId);
+            throw new Error(`Ticket customer not found ${ticket.id}, ${ticket.customerId}`);
         }
 
-        await processAutoAnswer(ticket, customer, text, async (answerManager) => {
-
-        });
+        await processAutoAnswer(ticket, customer, text);
 
         //If no key word reply default if no queue waiting before
     }

@@ -35,7 +35,6 @@ const db = {
     FaqCategory: require("./FaqCategory")(sequelize, Sequelize.DataTypes),
     Keyword: require("./Keyword")(sequelize, Sequelize.DataTypes),
     ScriptButtons: require("./ScriptButtons")(sequelize, Sequelize.DataTypes),
-    ScriptButtons: require("./ScriptButtons")(sequelize, Sequelize.DataTypes),
     TagModel: require("./TagModel")(sequelize, Sequelize.DataTypes),
     TagVoc: require("./TagVoc")(sequelize, Sequelize.DataTypes),
 };

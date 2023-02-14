@@ -44,3 +44,7 @@ export const PB_END_SUPPORT = "END_SUPPORT";
 export const RESPONSE_10MINS_CALLBACK = "RESPONSE_10MINS_CALLBACK";
 
 export const LONG_RESPONSE_CALLBACK_TIME_OUT = 12000;
+
+export const BUTTON_MODE_TYPE_PHONE_NUMBER = "phone_number";
+export const BUTTON_MODE_TYPE_POST_BACK = "postback";
+export const BUTTON_MODE_TYPE_WEB_URL = "web_url";

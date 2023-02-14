@@ -14,7 +14,7 @@ export default class BotHandler extends BaseHandler {
 
     /**
      *
-     * @param {any}message
+     * @param {any}messageData
      */
     async handleMessage(messageData) {
         console.log("Un-implements handleMessage");

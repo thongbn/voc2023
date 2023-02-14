@@ -3,27 +3,27 @@ export const createConversationId = (sender, receiver) => {
         return `${sender.id}_${receiver.id}`;
     }
     return `${receiver.id}_${sender.id}`;
-}
+};
 
 /**
- * 
- * @param {string} text 
- * @returns 
+ *
+ * @param {string} text
+ * @returns
  */
 export const viToSlug = (text) => {
     let slug;
 
     slug = text.toLowerCase();
 
-    slug = slug.replace(/á|à|ả|ạ|ã|ă|ắ|ằ|ẳ|ẵ|ặ|â|ấ|ầ|ẩ|ẫ|ậ/gi, 'a');
-    slug = slug.replace(/é|è|ẻ|ẽ|ẹ|ê|ế|ề|ể|ễ|ệ/gi, 'e');
-    slug = slug.replace(/i|í|ì|ỉ|ĩ|ị/gi, 'i');
-    slug = slug.replace(/ó|ò|ỏ|õ|ọ|ô|ố|ồ|ổ|ỗ|ộ|ơ|ớ|ờ|ở|ỡ|ợ/gi, 'o');
-    slug = slug.replace(/ú|ù|ủ|ũ|ụ|ư|ứ|ừ|ử|ữ|ự/gi, 'u');
-    slug = slug.replace(/ý|ỳ|ỷ|ỹ|ỵ/gi, 'y');
+    slug = slug.replace(/[áàảạãăắằẳẵặâấầẩẫậ]/gi, 'a');
+    slug = slug.replace(/[éèẻẽẹêếềểễệ]/gi, 'e');
+    slug = slug.replace(/[iíìỉĩị]/gi, 'i');
+    slug = slug.replace(/[óòỏõọôốồổỗộơớờởỡợ]/gi, 'o');
+    slug = slug.replace(/[úùủũụưứừửữự]/gi, 'u');
+    slug = slug.replace(/[ýỳỷỹỵ]/gi, 'y');
     slug = slug.replace(/đ/gi, 'd');
 
-    slug = slug.replace(/\`|\~|\!|\@|\#|\||\$|\%|\^|\&|\*|\(|\)|\+|\=|\,|\.|\/|\?|\>|\<|\'|\"|\:|\;|_/gi, '');
+    slug = slug.replace(/[`~!@#|$%^&*()+=,.\/?><'":;_]/gi, '');
 
     slug = slug.replace(/\-\-\-\-\-/gi, ' ');
     slug = slug.replace(/\-\-\-\-/gi, ' ');
@@ -31,8 +31,13 @@ export const viToSlug = (text) => {
     slug = slug.replace(/\-\-/gi, ' ');
 
     return slug;
-}
+};
 
 export const delayTimeout = (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms));
-}
+};
+
+export const isAbsoluteUrl = (url) => {
+    let reg = new RegExp('^(?:[a-z]+:)?//', 'i');
+    return reg.test(url);
+};
