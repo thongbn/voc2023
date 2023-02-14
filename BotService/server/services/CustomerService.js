@@ -11,6 +11,14 @@ export const findCustomerByPlatformId = async (platform, platformId) => {
     });
 };
 
+export const getCustomerById = async (customerId) => {
+    return await db.Customer.findOne({
+        where: {
+            id: customerId,
+        }
+    });
+};
+
 /**
  *
  * @param {string} platform

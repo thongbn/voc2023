@@ -32,3 +32,7 @@ export const viToSlug = (text) => {
 
     return slug;
 }
+
+export const delayTimeout = (ms) => {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}

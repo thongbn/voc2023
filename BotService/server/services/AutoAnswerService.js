@@ -1,18 +1,18 @@
+import { BUTTON_LISTS_TEXT, CUSTOMER_MESSAGE_CALLBACK, LONG_RESPONSE_CALLBACK, LONG_RESPONSE_CALLBACK_TIME_OUT } from "../appConst";
+import { delayTimeout } from "../appHelper";
+import { sendWithMessage } from "./FbService";
+
 /**
  * 
  * @param {db.Ticket} ticket 
  * @param {string} text 
  * @param {Promise<any>} fallBack 
  */
-export const processAutoAnswer = async (ticket, text, fallBack = null) => {
+export const processAutoAnswer = async (ticket, customer, text) => {
     const answerManagers = await findAllAnswerManagers();
     let compareMess = Helper.viToSlug(text);
     let canBreak = false;
     for (let i = 0; i < answerManagers.length; i++) {
-        // if(answerManagers[i].id == 3){
-        //     console.log("Check CGV", answerManagers[i].max_words, compareMess.split(" ").length);
-        // }
-        // console.log("Check max words");
         if (compareMess.split(" ").length <= answerManagers[i].max_words) {
             let keywords = answerManagers[i].answerKeywords;
             let exclude_keywords = [];
@@ -38,7 +38,6 @@ export const processAutoAnswer = async (ticket, text, fallBack = null) => {
                     if (compareMess.indexOf(include_keywords[j].keyword) !== -1) {
                         console.log("Facebook Handler.doAutoInbox");
                         canBreak = true;
-                        fallBack;
                         break;
                     }
                 }
@@ -48,14 +47,32 @@ export const processAutoAnswer = async (ticket, text, fallBack = null) => {
                 break;
             }
         }
+    }
 
-        if (!canBreak) {
-            // InboxHandler.getResQueue(data, conv);
+    if (!canBreak) {
+        // InboxHandler.getResQueue(data, conv);
+        //TODO Response default message
+        await defaultMessageResponse(customer.platformId);
+    } else {
+        // ticket.case_status = TICKET_CASE_STATUS_DONE;
+        // await ticket.save();
+        // TODO Ask user to close ticket or wait 24h to close it, quick reply
+    }
+}
 
-        } else {
-            ticket.case_status = TICKET_CASE_STATUS_DONE;
-            ticket.save();
-        }
+export const doAutoInbox = async (aws, ticket) => {
+    let contain = anw.content;
+    if (contain.length > 0) {
+        let script = db.BotScript.build({
+            type: BUTTON_LISTS_TEXT,
+            // quick_replies: [];
+            buttons: [],
+            unique_id: CUSTOMER_MESSAGE_CALLBACK,
+            title: contain,
+            parent: null,
+        });
+
+        await sendWithMessage(conv.psid, script);
     }
 }
 
@@ -74,9 +91,16 @@ export const findAllAnswerManagers = async () => {
     });
 }
 
-export const fbDoAutoImport = async (answerManager, ticket) => {
-    const { content } = answerManager;
-    if (!content || content.length === 0) {
-        throw new Error(`Content is null or empty`, answerManager.id);
+
+export const defaultMessageResponse = async (psid, script_call_back = LONG_RESPONSE_CALLBACK) => {
+    await delayTimeout(LONG_RESPONSE_CALLBACK_TIME_OUT);
+    const script = await db.BotScript.findOne({
+        where: {
+            unique_id: script_call_back
+        }
+    });
+    if (!script) {
+        throw new Error("Script not found:", script_call_back);
     }
+    await sendWithMessage(psid, script);
 }

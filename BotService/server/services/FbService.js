@@ -67,7 +67,7 @@ export const sendWithMessage = async (userId, message, params = "") => {
         },
         message: messageRes
     });
-
+    console.log("SendWithMessage result: " + JSON.stringify(res.data));
     return await res.data;
 }
 

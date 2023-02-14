@@ -9,6 +9,14 @@ export const findMessageByMid = async (platform, mid) => {
     })
 };
 
+export const findMessageById = async (id) => {
+    return await db.Message.findOne({
+        where: {
+            id
+        }
+    })
+};
+
 export const updateOrCreateMessage = async (platform, mid) => {
     //TODO Lock mid
     let model = await findMessageByMid(platform, mid);
