@@ -13,9 +13,10 @@ import {isAbsoluteUrl} from "../appHelper";
  * @param {string} userId
  * @param {db.BotScript} message
  * @param {string} params
+ * @param {boolean} isStandBy
  * @returns
  */
-export const sendWithMessage = async (userId, message, params = "") => {
+export const sendWithMessage = async (userId, message, params = "", isStandBy = false) => {
 
     let messageRes = {};
 
@@ -65,15 +66,31 @@ export const sendWithMessage = async (userId, message, params = "") => {
         }
     }
 
-    console.log("Message Res: ", JSON.stringify(messageRes));
-    const res = await graphPostRequest("", {
+    console.log("Message body: ", JSON.stringify(messageRes));
+    if (isStandBy) {
+        await graphPostRequest("/me/take_thread_control", {
+            recipient: {
+                id: userId
+            }
+        });
+    }
+
+    const res = await graphPostRequest("/me/messages", {
         recipient: {
             id: userId
         },
         message: messageRes
     });
-    console.log("SendWithMessage result: " + JSON.stringify(res.data));
-    return await res.data;
+
+    if (isStandBy) {
+        await graphPostRequest("/me/release_thread_control", {
+            recipient: {
+                id: userId
+            }
+        });
+    }
+    console.log("SendWithMessage result: " + JSON.stringify(res));
+    return res;
 };
 
 /**
@@ -85,7 +102,7 @@ export const sendWithMessage = async (userId, message, params = "") => {
  */
 export const sendTextMessage = async (userId, text, options = {}) => {
     console.log(userId, text);
-    const res = await graphPostRequest("", {
+    const res = await graphPostRequest("/me/messages", {
         recipient: {
             id: userId
         },
@@ -100,7 +117,7 @@ export const sendTextMessage = async (userId, text, options = {}) => {
 
 export const createButtons = async (message, params) => {
     let buttons = [];
-    let scriptBtns = await db.ScriptsButtons.findAll({
+    let scriptBtns = await db.ScriptButtons.findAll({
         where: {
             'bot_script_id': message.id
         },
@@ -126,7 +143,7 @@ export const createButtons = async (message, params) => {
             let splitted = val.payload.split("#");
             let url = splitted[0];
             if (!isAbsoluteUrl(url)) {
-                url = process.env.SERVER_URL + url;
+                url = process.env.BOT_WEB_BASE_URL + url;
             }
 
             let hashHeading = "";

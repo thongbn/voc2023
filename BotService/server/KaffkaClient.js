@@ -1,7 +1,7 @@
 import {Kafka} from 'kafkajs';
 import {getKafkaSettings} from './services/ConfigService';
-import FacebookHandler from "./handler/fb/FacebookHandler";
-import IgHandler from "./handler/ig/IgHandler";
+import FacebookHandler from "./handler/FacebookHandler";
+import IgHandler from "./handler/IgHandler";
 
 let kafka;
 let consumer;
@@ -29,12 +29,13 @@ export default {
 
         this.registerHandler(new FacebookHandler());
         this.registerHandler(new IgHandler());
+        // this.registerHandler(new IgHandler());
     },
 
     async connect() {
         try {
             console.log('Kafka Bot Service connecting...');
-            consumer.connect();
+            await consumer.connect();
             await consumer.subscribe({
                 topics: [
                     process.env.KAFKA_FB_BOT_TOPIC,
@@ -43,13 +44,13 @@ export default {
                 ]
             });
             console.log('Kafka Bot Service running...');
-            consumer.run({
+            await consumer.run({
                 partitionsConsumedConcurrently: 3, // Default: 1
                 eachMessage: async ({topic, partition, message}) => {
                     console.log("topic | partition | message: ", topic, partition, message.value.toString());
                     try {
                         if (this.handlers[topic]) {
-                            this.handlers[topic].handle(message);
+                            await this.handlers[topic].handle(message);
                         } else {
                             throw new Error(`Topic: ${topic} handler not founded`);
                         }

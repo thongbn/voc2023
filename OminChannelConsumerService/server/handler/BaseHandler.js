@@ -13,7 +13,7 @@ export default class BaseHandler {
         this.platform = platform;
     }
 
-    handle(message) {
+    async handle(message) {
         console.log("Un-implements handle");
     };
 }

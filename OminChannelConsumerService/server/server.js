@@ -1,3 +1,4 @@
+import 'source-map-support/register';
 require('dotenv').config();
 import http from "http";
 import db from "./models";

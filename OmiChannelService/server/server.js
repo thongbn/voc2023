@@ -1,4 +1,5 @@
 //CREATE SERVER
+import 'source-map-support/register';
 require('dotenv').config();
 import http from "http";
 

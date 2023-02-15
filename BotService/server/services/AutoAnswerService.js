@@ -1,6 +1,11 @@
-import { BUTTON_LISTS_TEXT, CUSTOMER_MESSAGE_CALLBACK, LONG_RESPONSE_CALLBACK, LONG_RESPONSE_CALLBACK_TIME_OUT } from "../appConst";
+import {
+    BUTTON_LISTS_TEXT,
+    CUSTOMER_MESSAGE_CALLBACK,
+    LONG_RESPONSE_CALLBACK,
+    LONG_RESPONSE_CALLBACK_TIME_OUT
+} from "../appConst";
 import {delayTimeout, viToSlug} from "../appHelper";
-import { sendWithMessage } from "./FbService";
+import {sendWithMessage} from "./FbService";
 import db from "../models";
 
 /**
@@ -8,9 +13,11 @@ import db from "../models";
  * @param ticket
  * @param customer
  * @param text
+ * @param isStandBy
  * @returns {Promise<void>}
  */
-export const processAutoAnswer = async (ticket, customer, text) => {
+export const processAutoAnswer = async (ticket, customer, text, isStandBy = false) => {
+    console.log("processAutoAnswer");
     const answerManagers = await findAllAnswerManagers();
     let compareMess = viToSlug(text);
     let canBreak = false;
@@ -38,8 +45,8 @@ export const processAutoAnswer = async (ticket, customer, text) => {
             if (canAnswer) {
                 for (let j = 0; j < include_keywords.length; j++) {
                     if (compareMess.indexOf(include_keywords[j].keyword) !== -1) {
-                        console.log("Facebook Handler.doAutoInbox");
-                        await doAutoInbox(answerManagers[i], ticket, customer);
+                        console.log("FacebookHandler.doAutoInbox");
+                        await doAutoInbox(answerManagers[i], ticket, customer, isStandBy);
                         canBreak = true;
                         break;
                     }
@@ -54,16 +61,18 @@ export const processAutoAnswer = async (ticket, customer, text) => {
 
     if (!canBreak) {
         // InboxHandler.getResQueue(data, conv);
-        await defaultMessageResponse(customer.platformId);
+        console.log("FacebookHandler.defaultMessageResponse");
+        await defaultMessageResponse(customer.platformId, isStandBy);
     } else {
+        console.log("FacebookHandler.sendAskToClose");
         // ticket.case_status = TICKET_CASE_STATUS_DONE;
         // await ticket.save();
         // TODO Ask user to close ticket or wait 24h to close it, quick reply
     }
 };
 
-export const doAutoInbox = async (aws, ticket, customer) => {
-    let contain = anw.content;
+export const doAutoInbox = async (aws, ticket, customer, isStandBy = false) => {
+    let contain = aws.content;
     if (contain.length > 0) {
         let script = db.BotScript.build({
             type: BUTTON_LISTS_TEXT,
@@ -74,7 +83,7 @@ export const doAutoInbox = async (aws, ticket, customer) => {
             parent: null,
         });
 
-        await sendWithMessage(customer.platformId, script);
+        await sendWithMessage(customer.platformId, script, "", isStandBy);
     }
 };
 
@@ -94,7 +103,7 @@ export const findAllAnswerManagers = async () => {
 };
 
 
-export const defaultMessageResponse = async (psid, script_call_back = LONG_RESPONSE_CALLBACK) => {
+export const defaultMessageResponse = async (psid, script_call_back = LONG_RESPONSE_CALLBACK, isStandBy) => {
     await delayTimeout(LONG_RESPONSE_CALLBACK_TIME_OUT);
     const script = await db.BotScript.findOne({
         where: {
@@ -104,5 +113,5 @@ export const defaultMessageResponse = async (psid, script_call_back = LONG_RESPO
     if (!script) {
         throw new Error(`Script not found: ${script_call_back}`);
     }
-    await sendWithMessage(psid, script);
+    await sendWithMessage(psid, script, "", isStandBy);
 };

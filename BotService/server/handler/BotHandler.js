@@ -1,12 +1,12 @@
 import BaseHandler from "./BaseHandler";
 
 export default class BotHandler extends BaseHandler {
-    handle(message) {
+    async handle(message) {
         try {
             const messageString = message.value.toString();
             //Save raw message
             const data = JSON.parse(messageString);
-            this.handleMessage(data);
+            await this.handleMessage(data);
         } catch (e) {
             throw e;
         }

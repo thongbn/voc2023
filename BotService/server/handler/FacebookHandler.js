@@ -1,60 +1,32 @@
-import { MESSAGE_TYPE_TEXT_ATTACHMENTS, TICKET_CASE_STATUS_DONE, TICKET_TYPE_MESSAGE } from "../appConst";
-import { processAutoAnswer } from "../services/AutoAnswerService";
-import { getCustomerById } from "../services/CustomerService";
-import { findTicketById } from "../services/TicketService";
-import BotHandler from "./BotHandler"
+import {MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_FB, TICKET_CASE_STATUS_DONE, TICKET_TYPE_MESSAGE} from "../appConst";
+import {processAutoAnswer} from "../services/AutoAnswerService";
+import {getCustomerById} from "../services/CustomerService";
+import {findTicketById} from "../services/TicketService";
+import {findMessageById} from "../services/MessageService";
+import BaseFacebookHandler from "./BaseFacebookHandler";
+import db from "../models";
+import {sendWithMessage} from "../services/FbService";
 
-export default class FacebookHandler extends BotHandler {
-    /**
-    *
-    * @param {any}messageData
-    */
-    async handleMessage(messageData) {
-        const { ticketId, messageId } = messageData;
-        if (!ticketId || !messageId) {
-            throw new Error("Ticket id, message id  missing");
-        }
-
-        const p1 = findTicketById(ticketId);
-        const p2 = findTicketById(messageId);
-
-        const [ticket, message] = await Promise.all([p1, p2]);
-
-        if (!ticket || !message) {
-            throw new Error(`Ticket, or message not founded: ${ticketId}, ${messageId}`);
-        }
-
-        if (ticket.caseStatus === TICKET_CASE_STATUS_DONE) {
-            return;
-        }
-
-        if (ticket.type !== TICKET_TYPE_MESSAGE) {
-            throw new Error(`Ticket type not support:`, ticket.type);
-        }
-
-        switch (message.type) {
-            case MESSAGE_TYPE_TEXT_ATTACHMENTS:
-                await this.handleTextAndMessage(ticket, message);
-                break;
-            default:
-                throw new Error("Message not supported");
-        }
+export default class FacebookHandler extends BaseFacebookHandler {
+    constructor() {
+        super(process.env.KAFKA_FB_BOT_TOPIC, PLATFORM_FB);
     }
 
-    async handleTextAndMessage(ticket, message) {
-        const { data } = message;
-        const { text } = data;
-        if (!text) {
-            return;
+    async doAutoAnswer(ticket, customer, text, isStandBy) {
+        await processAutoAnswer(ticket, customer, text, isStandBy);
+    }
+
+    async doPostback(ticket, customer, payload, isStandBy) {
+        const script = await db.BotScript.findOne({
+            where: {
+                unique_id: payload
+            }
+        });
+
+        if (!script) {
+            throw new Error(`Script not found: ${payload}`);
         }
 
-        const customer = getCustomerById(ticket.customerId);
-        if (!customer) {
-            throw new Error(`Ticket customer not found ${ticket.id}, ${ticket.customerId}`);
-        }
-
-        await processAutoAnswer(ticket, customer, text);
-
-        //If no key word reply default if no queue waiting before
+        await sendWithMessage(customer.platformId, script, "", isStandBy);
     }
 }

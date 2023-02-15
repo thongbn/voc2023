@@ -1,21 +1,21 @@
 import BaseHandler from "./BaseHandler";
 
 export default class FBBaseHandler extends BaseHandler{
-    handle(message) {
+    async handle(message) {
         try {
             const messageString = message.value.toString();
             //Save raw message
             const data = JSON.parse(messageString);
             const {entry} = data;
-            entry.forEach(item => {
-                this.handleItem(item);
-            });
+            for (const item of entry){
+                await this.handleItem(item);
+            }
         } catch (e) {
             throw e;
         }
     };
 
-    handleItem(item){
+    async handleItem(item){
         console.log("Un-implements handleItem");
     }
 
@@ -24,14 +24,11 @@ export default class FBBaseHandler extends BaseHandler{
      * @param {number} time
      * @param {[any]} messaging
      * */
-    handleMessagingArray(id, time, messaging) {
+    async handleMessagingArray(id, time, messaging) {
         try {
-            messaging.forEach(item => {
-                this.handleMessage(id, time, item)
-                    .catch(e => {
-                        console.error(e);
-                    });
-            })
+            for (const item of messaging){
+                await this.handleMessage(id, time, item, false);
+            }
         } catch (e) {
             console.error(e);
             //TODO Handle exception here
@@ -39,12 +36,30 @@ export default class FBBaseHandler extends BaseHandler{
     };
 
     /**
+     * @param {string} id
+     * @param {number} time
+     * @param {[any]} standBy
+     * */
+    async handleStandByArray(id, time, standBy) {
+        try {
+            for (const item of standBy){
+                await this.handleMessage(id, time, item, true);
+            }
+        } catch (e) {
+            console.error(e);
+            //TODO Handle exception here
+        }
+    };
+
+
+    /**
      *
      * @param  {string} id
      * @param {number} time
      * @param {any}message
+     * @param isStandBy
      */
-    async handleMessage(id, time, message) {
+    async handleMessage(id, time, message, isStandBy = false) {
         console.log("Un-implements handleMessage");
     }
 }

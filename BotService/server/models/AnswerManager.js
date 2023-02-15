@@ -21,8 +21,8 @@ module.exports = (sequelize) => {
         static associate(models) {
             // define association here
             AnswerManager.hasMany(models.AnswerKeyword, {
-                foreignKey: "id",
-                sourceKey: "answer_id",
+                foreignKey: "answer_id",
+                sourceKey: "id",
                 as: "answerKeywords"
             });
         }

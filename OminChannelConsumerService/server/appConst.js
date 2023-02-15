@@ -20,6 +20,7 @@ export const TICKET_TYPE_COMMENT = "comment";
 export const TICKET_TYPE_RATINGS = "ratings";
 
 export const MESSAGE_TYPE_TEXT_ATTACHMENTS = "text_attachments";
+export const MESSAGE_TYPE_POSTBACK = "postback";
 export const MESSAGE_TYPE_RATINGS = "ratings";
 
 //

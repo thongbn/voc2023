@@ -1,12 +1,60 @@
 import {findMessageByMid, lockAndUpdateMessage, updateOrCreateMessage} from "../../services/MessageService";
 import {updateOrCreateCustomer} from "../../services/CustomerService";
-import {updateOrCreateTicket} from "../../services/TicketService";
-import {MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_FB, TICKET_TYPE_MESSAGE} from "../../appConst";
+import {findLatestAndUnresovledTicketByCustomerId, updateOrCreateTicket} from "../../services/TicketService";
+import {MESSAGE_TYPE_POSTBACK, MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_FB, TICKET_TYPE_MESSAGE} from "../../appConst";
 import {createConversationId} from "../../appHelper";
 import KaffkaClient from "../../KaffkaClient";
 
-export const handlePostback = async (messaging) => {
+export const handlePostback = async (platformId, data, rawMessage, isStandBy = false) => {
     //TODO postback
+    const {sender, recipient, timestamp, postback} = data;
+    const {title, payload, mid} = postback;
+
+    if (!sender || !recipient) {
+        throw new Error("handleTextAndAttachmentMessage: sender or recipient null");
+    }
+
+    try {
+        //UPDATE OR SAVE CUSTOMER
+        const c1 = updateOrCreateCustomer(PLATFORM_FB, sender.id);
+        const c2 = updateOrCreateCustomer(PLATFORM_FB, recipient.id);
+
+        const [senderCustomer, receiverCustomer] = await Promise.all([c1, c2]);
+        //TRANSACTION HERE
+        //FIND OR CREATE OPEN TICKET
+        console.log("Find Ticket");
+        const ticket = await findLatestAndUnresovledTicketByCustomerId(
+            PLATFORM_FB
+            , platformId
+            , TICKET_TYPE_MESSAGE
+            , senderCustomer.id
+        );
+
+        if(!ticket){
+            return null;
+        }
+
+        //SAVE MESSAGE FOR TICKET
+        const textMessage = await updateOrCreateMessage(PLATFORM_FB, mid);
+        textMessage.type = MESSAGE_TYPE_POSTBACK;
+        textMessage.customerId = senderCustomer.id;
+
+        await lockAndUpdateMessage(textMessage, ticket.id, rawMessage.id, postback);
+
+        //TODO Lock and update ticket here
+        KaffkaClient.sendFacebook({
+            ticketId: ticket.id,
+            messageId: textMessage.id,
+            isStandBy
+        }).catch(e => console.log(e));
+
+        ticket.lcmTime = new Date(timestamp);
+        await ticket.save();
+        return textMessage;
+    } catch (e) {
+        console.error(e);
+        throw e;
+    }
 };
 
 export const handleRead = async (messaging) => {
@@ -67,7 +115,6 @@ export const handleReaction = async (messaging) => {
                 return;
         }
 
-
         otherData = {
             ...otherData,
             reaction: reactionData
@@ -79,7 +126,7 @@ export const handleReaction = async (messaging) => {
     }
 };
 
-export const handleTextAndAttachmentMessage = async (platformId, messaging, rawMessage) => {
+export const handleTextAndAttachmentMessage = async (platformId, messaging, rawMessage, isStandBy = false) => {
     const {sender, recipient, timestamp, message} = messaging;
     const {mid, text, attachments, is_echo = false, reply_to, quick_reply} = message;
     //VALIDATE
@@ -117,12 +164,13 @@ export const handleTextAndAttachmentMessage = async (platformId, messaging, rawM
         if (!ticket.firstMessage) {
             ticket.firstMessage = text ?
                 text :
-                (attachments ? "Customer send Attachment" : "Customer send unsported type");
+                (attachments ? "Customer send Attachment" : "Customer send unsupported type");
             //Gui thong tin den bot service
             KaffkaClient.sendFacebook({
                 ticketId: ticket.id,
                 messageId: textMessage.id,
-            });
+                isStandBy
+            }).catch(e => console.log(e));
         }
 
         if (!is_echo) {

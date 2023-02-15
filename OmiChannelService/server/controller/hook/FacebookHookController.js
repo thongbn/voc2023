@@ -55,11 +55,8 @@ export default class FacebookHookController extends BaseController {
                 }));
             }
             //Publish body to kafka
-            kafkaClient
-                .sendFacebook(req.body)
-                .catch(e => {
-                    console.error(e);
-                });
+            await kafkaClient
+                .sendFacebook(req.body);
             return res.json({
                 success: true
             });

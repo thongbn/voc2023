@@ -56,6 +56,6 @@ export const graphApiPost = async (path, data, messTokenType = "page", queryObj=
         return res.data;
     } catch (e) {
         console.error(path, messToken, data, queryObj, e.message, e.response.data);
-        throw e;
+        throw createError(400, e.message);
     }
 };

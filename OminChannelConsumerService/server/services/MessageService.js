@@ -26,19 +26,28 @@ export const updateOrCreateMessage = async (platform, mid) => {
 };
 
 /**
- * @param {db.Message} message 
- * @param {number} ticketId 
- * @param {number} rawId 
- * @param {any} data 
- * 
+ * @param {db.Message} message
+ * @param {number} ticketId
+ * @param {number} rawId
+ * @param {any} data
+ *
  */
 export const lockAndUpdateMessage = async (message, ticketId, rawId, data) => {
 
     //TODO Raise lock
-    const { text, attachments, is_deleted, quick_reply, reply_to, is_echo = false } = data;
+    const {
+        text
+        , attachments
+        , is_deleted
+        , quick_reply
+        , reply_to
+        , is_echo = false
+        , title
+        , payload
+    } = data;
 
     if (!is_deleted) {
-        let messData = message.data ? JSON.parse(message) : {};
+        let messData = message.data ? JSON.parse(message.data) : {};
         if (text) {
             messData = {
                 ...messData,
@@ -49,6 +58,13 @@ export const lockAndUpdateMessage = async (message, ticketId, rawId, data) => {
             messData = {
                 ...messData,
                 attachments
+            }
+        }
+        if (payload) {
+            messData = {
+                ...messData,
+                title,
+                payload
             }
         }
 

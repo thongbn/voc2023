@@ -9,13 +9,15 @@ export default class FacebookHandler extends FBBaseHandler {
         super(process.env.KAFKA_TOPIC_FB, PLATFORM_FB);
     }
 
-    handleItem(item) {
-        const {id, time, standby, changes} = item;
+    async handleItem(item) {
+        const {id, time, messaging, standby, changes} = item;
         //TODO hop_context
         if (standby) {
-            this.handleMessagingArray(id, time, standby);
+            await this.handleStandByArray(id, time, standby);
+        }if (messaging) {
+            await this.handleMessagingArray(id, time, messaging);
         } else if (changes) {
-            handleCommentArray(id, time, changes);
+            await handleCommentArray(id, time, changes);
         } else {
             console.error("Item not supported");
         }
@@ -26,8 +28,9 @@ export default class FacebookHandler extends FBBaseHandler {
      * @param  {string} id
      * @param {number} time
      * @param {any} messaging
+     * @param {boolean} isStandBy
      */
-    async handleMessage(id, time, messaging) {
+    async handleMessage(id, time, messaging, isStandBy) {
         try {
             const {message, postback, reaction, read} = messaging;
 
@@ -45,7 +48,7 @@ export default class FacebookHandler extends FBBaseHandler {
             if (postback) {
                 const rawMessage = await createRawData(this.platform, id, time, FB_POSTBACK, JSON.stringify(messaging));
                 try {
-                    await handlePostback(id, messaging);
+                    await handlePostback(id, messaging, rawMessage, isStandBy);
                 } catch (e) {
                     rawMessage.isError = true;
                     rawMessage.errorMessage = e.message;
@@ -58,7 +61,7 @@ export default class FacebookHandler extends FBBaseHandler {
             if (message) {
                 let rawMessage = await createRawData(this.platform, id, time, FB_MESSAGE, JSON.stringify(messaging));
                 try {
-                    const messages = await handleTextAndAttachmentMessage(id, messaging, rawMessage);
+                    await handleTextAndAttachmentMessage(id, messaging, rawMessage, isStandBy);
                     // rawMessage.messageId = message?.id;
                 } catch (e) {
                     rawMessage.isError = true;
