@@ -77,7 +77,7 @@ export default class BaseFacebookHandler extends BotHandler {
     async handleTextAndMessage(ticket, message, isStandBy = false) {
         console.log("handleTextAndMessage", message.data);
         const {data} = message;
-        const {text} = JSON.parse(data);
+        const {text, quickReply} = JSON.parse(data);
         if (!text) {
             console.log("text is empty", JSON.parse(data));
             return;
@@ -88,7 +88,11 @@ export default class BaseFacebookHandler extends BotHandler {
             throw new Error(`Ticket customer not found ${ticket.id}, ${ticket.customerId}`);
         }
 
-        await this.doAutoAnswer(ticket, customer, text, isStandBy);
+        if(!quickReply){
+            await this.doAutoAnswer(ticket, customer, text, isStandBy);
+        }else{
+            await this.doPostback(ticket, customer, quickReply.payload, isStandBy);
+        }
     }
 
     async doAutoAnswer(ticket, customer, text, isStandBy) {

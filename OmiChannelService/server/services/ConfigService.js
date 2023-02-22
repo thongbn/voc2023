@@ -12,6 +12,11 @@ export const getFacebookSettings = async () => {
     }
 };
 
+export const getZaloSettings = async () => {
+    const settings = await getOmiConfig();
+    return settings.zalo;
+};
+
 export const getKafkaConfig = async () => {
     const {kafka} = await getOmiConfig();
     return kafka;

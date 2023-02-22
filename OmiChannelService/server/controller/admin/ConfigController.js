@@ -25,16 +25,18 @@ export default class ConfigController extends BaseController {
         try {
             await graphApiPost("/me/messenger_profile"
                 , {
-                    "persistent_menu": {
-                        "locale": "default",
-                        "call_to_actions": [
-                            {
-                                "title": "🔔 Click để được hỗ trợ",
-                                "type": "postback",
-                                "payload": GET_STARTED_POSTBACK
-                            }
-                        ]
-                    }
+                    "persistent_menu": [
+                        {
+                            "locale": "default",
+                            "call_to_actions": [
+                                {
+                                    "title": "🔔 Click để được hỗ trợ",
+                                    "type": "postback",
+                                    "payload": GET_STARTED_POSTBACK
+                                }
+                            ]
+                        }
+                    ]
                 }
                 , "page"
                 , {
@@ -128,26 +130,17 @@ export default class ConfigController extends BaseController {
 
     async updateOmiConfig(req, res, next) {
         const {
-            kafka = {
-                brokers: process.env.KAFKA_BROKER,
-                clientId: process.env.KAFKA_CLIENT_ID,
-            }, facebook = {
-                topic: process.env.KAFKA_TOPIC_FB,
-                verifyToken: process.env.FACEBOOK_VERIFY_TOKEN,
-                appSecret: process.env.FACEBOOK_APP_SECRET,
-                pageId: process.env.FACEBOOK_PAGE_ID,
-            }, instagram = {
-                topic: process.env.KAFKA_TOPIC_INSTAGRAM,
-                verifyToken: process.env.FACEBOOK_VERIFY_TOKEN,
-                appSecret: process.env.FACEBOOK_APP_SECRET,
-                pageId: process.env.INSTAGRAM_ACC_ID
-            },
+            kafka = {}
+            , facebook = {}
+            , instagram = {}
+            , zalo = {}
         } = req.body;
         try {
             const settings = await setConfig("omi-config", {
                 kafka,
                 facebook,
-                instagram
+                instagram,
+                zalo
             });
             return res.json({
                 data: settings,

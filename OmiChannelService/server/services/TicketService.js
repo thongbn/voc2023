@@ -135,12 +135,14 @@ export const replyFacebookMessage = async (ticket, data) => {
         await textMessage.save();
 
         let messageData = {
-            recipient: `{"id": "${customer.platformId}"}`,
-            message: `{
-                "text": "${message}",
-                "metadata":"${textMessage.id}"
-            }`,
-            message_type: "UPDATE",
+            recipient: {
+                "id": customer.platformId
+            },
+            message: {
+                "text": message,
+                "metadata": textMessage.id
+            },
+            message_type: "RESPONSE ",
         };
         formsDatas.push(messageData);
         textMessages.push(textMessage);
@@ -165,7 +167,7 @@ export const replyFacebookMessage = async (ticket, data) => {
                         'payload': {'url':'${process.env.RESOURCE_BASE_URL}${item.path}'}
                     }
                 }`,
-            message_type: "UPDATE"
+            message_type: "RESPONSE"
         });
         textMessages.push(textMessage);
     }
@@ -237,8 +239,12 @@ export const replyIgMessage = async (ticket, data) => {
     let formsDatas = [];
     if (message) {
         let messageData = {
-            recipient: `{"id": "${customer.platformId}"}`,
-            message: `{"text": "${message}"}`
+            recipient: {
+                id: customer.platformId
+            },
+            message: {
+                text: message
+            }
         };
         formsDatas.push(messageData);
     }

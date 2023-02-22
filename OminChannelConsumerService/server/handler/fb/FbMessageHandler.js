@@ -6,9 +6,8 @@ import {createConversationId} from "../../appHelper";
 import KaffkaClient from "../../KaffkaClient";
 
 export const handlePostback = async (platformId, data, rawMessage, isStandBy = false) => {
-    //TODO postback
     const {sender, recipient, timestamp, postback} = data;
-    const {title, payload, mid} = postback;
+    const {mid} = postback;
 
     if (!sender || !recipient) {
         throw new Error("handleTextAndAttachmentMessage: sender or recipient null");
@@ -30,7 +29,7 @@ export const handlePostback = async (platformId, data, rawMessage, isStandBy = f
             , senderCustomer.id
         );
 
-        if(!ticket){
+        if (!ticket) {
             return null;
         }
 
@@ -161,11 +160,20 @@ export const handleTextAndAttachmentMessage = async (platformId, messaging, rawM
         await lockAndUpdateMessage(textMessage, ticket.id, rawMessage.id, message);
 
         //TODO Lock and update ticket here
-        if (!ticket.firstMessage) {
-            ticket.firstMessage = text ?
-                text :
-                (attachments ? "Customer send Attachment" : "Customer send unsupported type");
-            //Gui thong tin den bot service
+        if (!quick_reply) {
+            if (!ticket.firstMessage) {
+
+                ticket.firstMessage = text ?
+                    text :
+                    (attachments ? "Customer send Attachment" : "Customer send unsupported type");
+                //Gui thong tin den bot service
+                KaffkaClient.sendFacebook({
+                    ticketId: ticket.id,
+                    messageId: textMessage.id,
+                    isStandBy
+                }).catch(e => console.log(e));
+            }
+        } else {
             KaffkaClient.sendFacebook({
                 ticketId: ticket.id,
                 messageId: textMessage.id,

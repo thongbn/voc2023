@@ -2,11 +2,12 @@ import {
     BUTTON_LISTS_TEXT,
     CUSTOMER_MESSAGE_CALLBACK,
     LONG_RESPONSE_CALLBACK,
-    LONG_RESPONSE_CALLBACK_TIME_OUT
+    LONG_RESPONSE_CALLBACK_TIME_OUT, PLATFORM_FB, PLATFORM_IG
 } from "../appConst";
 import {delayTimeout, viToSlug} from "../appHelper";
 import {sendWithMessage} from "./FbService";
 import db from "../models";
+import {sendIgWithMessage} from "./IgService";
 
 /**
  *
@@ -14,9 +15,10 @@ import db from "../models";
  * @param customer
  * @param text
  * @param isStandBy
+ * @param platform
  * @returns {Promise<void>}
  */
-export const processAutoAnswer = async (ticket, customer, text, isStandBy = false) => {
+export const processAutoAnswer = async (ticket, customer, text, isStandBy = false, platform = PLATFORM_FB) => {
     console.log("processAutoAnswer");
     const answerManagers = await findAllAnswerManagers();
     let compareMess = viToSlug(text);
@@ -62,7 +64,7 @@ export const processAutoAnswer = async (ticket, customer, text, isStandBy = fals
     if (!canBreak) {
         // InboxHandler.getResQueue(data, conv);
         console.log("FacebookHandler.defaultMessageResponse");
-        await defaultMessageResponse(customer.platformId, isStandBy);
+        await defaultMessageResponse(platform, customer.platformId, isStandBy);
     } else {
         console.log("FacebookHandler.sendAskToClose");
         // ticket.case_status = TICKET_CASE_STATUS_DONE;
@@ -103,7 +105,7 @@ export const findAllAnswerManagers = async () => {
 };
 
 
-export const defaultMessageResponse = async (psid, script_call_back = LONG_RESPONSE_CALLBACK, isStandBy) => {
+export const defaultMessageResponse = async (platform, psid, script_call_back = LONG_RESPONSE_CALLBACK, isStandBy) => {
     await delayTimeout(LONG_RESPONSE_CALLBACK_TIME_OUT);
     const script = await db.BotScript.findOne({
         where: {
@@ -113,5 +115,15 @@ export const defaultMessageResponse = async (psid, script_call_back = LONG_RESPO
     if (!script) {
         throw new Error(`Script not found: ${script_call_back}`);
     }
-    await sendWithMessage(psid, script, "", isStandBy);
+
+    switch (platform) {
+        case PLATFORM_FB:
+            await sendWithMessage(psid, script, "", isStandBy);
+            break;
+        case PLATFORM_IG:
+            await sendIgWithMessage(psid, script, "", isStandBy);
+            break;
+        default:
+            throw new Error(`Not support platform ${platform}`);
+    }
 };

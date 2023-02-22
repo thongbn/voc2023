@@ -38,6 +38,11 @@ module.exports = (sequelize) => {
             allowNull: false
         },
         is_persisted: DataTypes.SMALLINT,
+        shouldTicket: {
+            type: DataTypes.BOOLEAN,
+            allowNull: true,
+            default: false
+        },
         created_at: DataTypes.INTEGER.UNSIGNED,
         updated_at: DataTypes.INTEGER.UNSIGNED,
     }, {

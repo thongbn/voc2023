@@ -3,6 +3,7 @@ import {getKafkaSettings} from './services/ConfigService';
 import FacebookHandler from "./handler/fb/FacebookHandler";
 import IgHandler from "./handler/ig/IgHandler";
 import crypto from "crypto";
+import ZaloHandler from "./handler/zalo/ZaloHandler";
 
 let kafka;
 let consumer;
@@ -36,6 +37,7 @@ export default {
 
         this.registerHandler(new FacebookHandler());
         this.registerHandler(new IgHandler());
+        this.registerHandler(new ZaloHandler());
     },
 
     async connect() {

@@ -67,6 +67,12 @@ export const lockAndUpdateMessage = async (message, ticketId, rawId, data) => {
                 payload
             }
         }
+        if (quick_reply) {
+            messData = {
+                ...messData,
+                quickReply: quick_reply
+            }
+        }
 
         message.data = JSON.stringify(messData);
         message.ticketId = ticketId;

@@ -1,10 +1,16 @@
-import {findMessageByMid, updateOrCreateMessage} from "../../services/MessageService";
+import {findMessageByMid, lockAndUpdateMessage, updateOrCreateMessage} from "../../services/MessageService";
 import {updateOrCreateCustomer} from "../../services/CustomerService";
 import {getInstgramSettings} from "../../services/ConfigService";
 import db from "../../models";
-import {updateOrCreateTicket} from "../../services/TicketService";
-import {MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_IG, TICKET_TYPE_MESSAGE} from "../../appConst";
+import {findLatestAndUnresovledTicketByCustomerId, updateOrCreateTicket} from "../../services/TicketService";
+import {
+    MESSAGE_TYPE_POSTBACK,
+    MESSAGE_TYPE_TEXT_ATTACHMENTS,
+    PLATFORM_IG,
+    TICKET_TYPE_MESSAGE
+} from "../../appConst";
 import {createConversationId} from "../../appHelper";
+import KaffkaClient from "../../KaffkaClient";
 
 export const handleReaction = async (messaging) => {
     //Todo lock mid
@@ -64,8 +70,55 @@ export const handleReaction = async (messaging) => {
     }
 };
 
-export const handlePostback = async (id, messaging) => {
-    //TODO postback
+export const handlePostback = async (platformId, data, rawMessage, isStandBy = false) => {
+    const {sender, recipient, timestamp, postback} = data;
+    const {mid} = postback;
+
+    if (!sender || !recipient) {
+        throw new Error("handleTextAndAttachmentMessage: sender or recipient null");
+    }
+
+    try {
+        //UPDATE OR SAVE CUSTOMER
+        const c1 = updateOrCreateCustomer(PLATFORM_IG, sender.id);
+        const c2 = updateOrCreateCustomer(PLATFORM_IG, recipient.id);
+
+        const [senderCustomer, receiverCustomer] = await Promise.all([c1, c2]);
+        //TRANSACTION HERE
+        //FIND OR CREATE OPEN TICKET
+        console.log("Find Ticket");
+        const ticket = await findLatestAndUnresovledTicketByCustomerId(
+            PLATFORM_IG
+            , platformId
+            , TICKET_TYPE_MESSAGE
+            , senderCustomer.id
+        );
+
+        if (!ticket) {
+            return null;
+        }
+
+        //SAVE MESSAGE FOR TICKET
+        const textMessage = await updateOrCreateMessage(PLATFORM_IG, mid);
+        textMessage.type = MESSAGE_TYPE_POSTBACK;
+        textMessage.customerId = senderCustomer.id;
+
+        await lockAndUpdateMessage(textMessage, ticket.id, rawMessage.id, postback);
+
+        //TODO Lock and update ticket here
+        KaffkaClient.sendInstagram({
+            ticketId: ticket.id,
+            messageId: textMessage.id,
+            isStandBy
+        }).catch(e => console.log(e));
+
+        ticket.lcmTime = new Date(timestamp);
+        await ticket.save();
+        return textMessage;
+    } catch (e) {
+        console.error(e);
+        throw e;
+    }
 };
 
 export const handleRead = async (messaging) => {
@@ -99,9 +152,57 @@ export const handleRead = async (messaging) => {
     }
 };
 
-export const handleTextAndAttachmentMessage = async (igId, messaging, rawMessage) => {
+export const handleQuickReplyMessage = async (platformId, messaging, rawMessage, isStandBy = false) => {
     const {sender, recipient, timestamp, message} = messaging;
-    const {mid, text, attachments, is_deleted, quick_reply, reply_to} = message;
+    const {mid} = message;
+
+    if (!sender || !recipient) {
+        throw new Error("handleTextAndAttachmentMessage: sender or recipient null");
+    }
+
+    try {
+        //UPDATE OR SAVE CUSTOMER
+        const c1 = updateOrCreateCustomer(PLATFORM_IG, sender.id);
+        const c2 = updateOrCreateCustomer(PLATFORM_IG, recipient.id);
+
+        const [senderCustomer, receiverCustomer] = await Promise.all([c1, c2]);
+        console.log("Find Ticket");
+        const ticket = await findLatestAndUnresovledTicketByCustomerId(
+            PLATFORM_IG
+            , platformId
+            , TICKET_TYPE_MESSAGE
+            , senderCustomer.id
+        );
+
+        if (!ticket) {
+            return null;
+        }
+
+        //SAVE MESSAGE FOR TICKET
+        const textMessage = await updateOrCreateMessage(PLATFORM_IG, mid);
+        textMessage.type = MESSAGE_TYPE_TEXT_ATTACHMENTS;
+        textMessage.customerId = senderCustomer.id;
+        await lockAndUpdateMessage(textMessage, ticket.id, rawMessage.id, message);
+
+        //TODO Lock and update ticket here
+        KaffkaClient.sendInstagram({
+            ticketId: ticket.id,
+            messageId: textMessage.id,
+            isStandBy
+        }).catch(e => console.log(e));
+
+        ticket.lcmTime = new Date(timestamp);
+        await ticket.save();
+        return textMessage;
+    } catch (e) {
+        console.error(e);
+        throw e;
+    }
+};
+
+export const handleTextAndAttachmentMessage = async (igId, messaging, rawMessage, isStandBy = false) => {
+    const {sender, recipient, timestamp, message} = messaging;
+    const {mid, text, attachments, is_deleted} = message;
     //VALIDATE
     if (!sender || !recipient) {
         throw new Error("handleTextAndAttachmentMessage:sender or recipient null");
@@ -109,7 +210,7 @@ export const handleTextAndAttachmentMessage = async (igId, messaging, rawMessage
     //UPDATE OR SAVE CUSTOMER
     const p1 = updateOrCreateCustomer(PLATFORM_IG, sender.id);
     const p2 = updateOrCreateCustomer(PLATFORM_IG, recipient.id);
-    const [senderCustomer, receiverCustomer] = await Promise.all([p1,p2]);
+    const [senderCustomer, receiverCustomer] = await Promise.all([p1, p2]);
     const igSettings = await getInstgramSettings();
 
     try {
@@ -122,6 +223,7 @@ export const handleTextAndAttachmentMessage = async (igId, messaging, rawMessage
             //SAVE MESSAGE FOR TICKET
             const textMessage = await updateOrCreateMessage(PLATFORM_IG, mid);
             textMessage.type = MESSAGE_TYPE_TEXT_ATTACHMENTS;
+            let isFirstMessage = false;
             if (!is_deleted) {
                 let messData = textMessage.data ? JSON.parse(textMessage.data) : {};
                 if (text) {
@@ -129,11 +231,11 @@ export const handleTextAndAttachmentMessage = async (igId, messaging, rawMessage
                         ...messData,
                         text: text
                     };
-
                     //Update new information ticket
                     //Define page or customer;
                     if (!ticket.firstMessage) {
                         ticket.firstMessage = text;
+                        isFirstMessage = true;
                     }
 
                     if (igSettings.pageId != sender.id) {
@@ -148,6 +250,7 @@ export const handleTextAndAttachmentMessage = async (igId, messaging, rawMessage
                     };
                     if (!ticket.firstMessage) {
                         ticket.firstMessage = "Customer send Attachment";
+                        isFirstMessage = true;
                     }
                 }
 
@@ -156,11 +259,18 @@ export const handleTextAndAttachmentMessage = async (igId, messaging, rawMessage
                 textMessage.ticketId = ticket.id;
                 textMessage.rawId = rawMessage.id;
                 await textMessage.save();
+
+                if (isFirstMessage) {
+                    KaffkaClient.sendInstagram({
+                        ticketId: ticket.id,
+                        messageId: textMessage.id,
+                        isStandBy
+                    }).catch(e => console.log(e));
+                }
                 messages = textMessage;
             } else {
                 textMessage.isDeleted = true;
             }
-
 
             if (igSettings.pageId == sender.id) {
                 ticket.lrmTime = new Date();

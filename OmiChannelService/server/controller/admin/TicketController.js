@@ -262,13 +262,15 @@ export default class TicketController extends BaseController {
             switch (model.platform) {
                 case PLATFORM_IG: {
                     replyModel = await replayIg(model, {
-                        message, attachments
+                        message
+                        , attachments
                     });
                     break;
                 }
                 case PLATFORM_FB: {
                     replyModel = await replayFacebook(model, {
-                        message, attachments
+                        message
+                        , attachments
                     });
                     break;
                 }

@@ -5,7 +5,13 @@ import {
 } from "../../appConst";
 import {createRawData} from "../../services/RawService";
 import FBBaseHandler from "../FBBaseHandler";
-import {handlePostback, handleReaction, handleRead, handleTextAndAttachmentMessage} from "./IgMessageHandler";
+import {
+    handlePostback,
+    handleQuickReplyMessage,
+    handleReaction,
+    handleRead,
+    handleTextAndAttachmentMessage
+} from "./IgMessageHandler";
 import {handleChangeItem} from "./IgChangesHandler";
 
 export default class IgHandler extends FBBaseHandler {
@@ -13,13 +19,15 @@ export default class IgHandler extends FBBaseHandler {
         super(process.env.KAFKA_TOPIC_INSTAGRAM, PLATFORM_IG);
     }
 
-    handleItem(item) {
-        const {id, time, messaging, changes} = item;
+    async handleItem(item) {
+        const {id, time, messaging, standby, changes} = item;
         //TODO hop_context
-        if (messaging) {
-            this.handleMessagingArray(id, time, messaging);
+        if (standby) {
+            await this.handleStandByArray(id, time, standby);
+        } else if (messaging) {
+            await this.handleMessagingArray(id, time, messaging);
         } else if (changes) {
-            this.handleChangesArray(id, time, changes);
+            await this.handleChangesArray(id, time, changes);
         } else {
             console.error("Item not supported");
         }
@@ -30,21 +38,18 @@ export default class IgHandler extends FBBaseHandler {
      * @param {number} time
      * @param {[any]} changes
      * */
-    handleChangesArray(id, time, changes) {
+    async handleChangesArray(id, time, changes) {
         try {
-            changes.forEach(item => {
-                handleChangeItem(id, time, item)
-                    .catch(e => {
-                        console.error(e);
-                    });
-            })
+            for (const item of changes) {
+                await handleChangeItem(id, time, item);
+            }
         } catch (e) {
             console.error(e);
             //TODO Handle exception here
         }
     };
 
-    async handleMessage(id, time, messaging) {
+    async handleMessage(id, time, messaging, isStandBy = false) {
         try {
             const {message, reaction, postback, read} = messaging;
 
@@ -57,7 +62,7 @@ export default class IgHandler extends FBBaseHandler {
             if (postback) {
                 const rawMessage = await createRawData(this.platform, id, time, IG_POSTBACK, JSON.stringify(messaging));
                 try {
-                    await handlePostback(id, messaging);
+                    await handlePostback(id, messaging, rawMessage, isStandBy);
                 } catch (e) {
                     rawMessage.isError = true;
                     rawMessage.errorMessage = e.message;
@@ -73,10 +78,14 @@ export default class IgHandler extends FBBaseHandler {
 
             //Truong hop xu ly message binh thuong
             if (message) {
+                const {quick_reply} = message;
                 let rawMessage = await createRawData(this.platform, id, time, IG_MESSAGE, JSON.stringify(messaging));
                 try {
-                    await handleTextAndAttachmentMessage(id, messaging, rawMessage);
-                    // rawMessage.messageId = message?.id;
+                    if (!quick_reply) {
+                        await handleTextAndAttachmentMessage(id, messaging, rawMessage, isStandBy);
+                    } else {
+                        await handleQuickReplyMessage(id, messaging, rawMessage, isStandBy);
+                    }
                 } catch (e) {
                     rawMessage.isError = true;
                     rawMessage.errorMessage = e.message;

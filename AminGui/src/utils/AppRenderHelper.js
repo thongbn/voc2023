@@ -32,7 +32,7 @@ export const renderCaseStatusTag = (caseStatus, type = "tag") => {
         case "tag":
             return <Tag color={color} className={`bg-${color}`} size="small">{name}</Tag>;
         default:
-            return <Typography.Text type={color} className={`t-${color}`}>{name}</Typography.Text>
+            return <Typography.Text type={color} className={`text-${color}`}>{name}</Typography.Text>
     }
 };
 
@@ -59,15 +59,15 @@ export const renderInboxTimeWarning = (ticket, className = "") => {
 
     try {
         const lcmTime = moment(ticket.lcmTime);
-        if(ticket.lrmTime){
-            let lrmTime = moment(ticket.lrmTime);
-            const hours = moment.duration(lcmTime.diff(lrmTime)).asHours();
-            if(hours < 0){
-                return <Typography.Text type='secondary' italic style={{fontSize: "10px", fontWeight: "normal"}}>
-                    Wait customer feedback
-                </Typography.Text>;
-            }
-        }
+        // if(ticket.lrmTime){
+        //     let lrmTime = moment(ticket.lrmTime);
+        //     const hours = moment.duration(lcmTime.diff(lrmTime)).asHours();
+        //     if(hours < 0){
+        //         return <Typography.Text type='secondary' italic style={{fontSize: "10px", fontWeight: "normal"}}>
+        //             Wait customer feedback
+        //         </Typography.Text>;
+        //     }
+        // }
 
         const nowTime = moment();
         const hours = moment.duration(lcmTime.diff(nowTime)).asHours();
@@ -88,4 +88,12 @@ export const renderInboxTimeWarning = (ticket, className = "") => {
         console.error(e);
         return <></>;
     }
+};
+
+export const nl2br = (str, isXhtml) => {
+    if (typeof str === 'undefined' || str === null) {
+        return '';
+    }
+    let breakTag = (isXhtml || typeof isXhtml === 'undefined') ? '<br />' : '<br>';
+    return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1' + breakTag + '$2');
 };

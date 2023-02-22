@@ -95,6 +95,7 @@ export const CASE_STATUS = {
 
 export const MESSAGE_TYPE_TEXT_ATTACHMENT = "text_attachments";
 export const MESSAGE_TYPE_RATINGS = "ratings";
+export const MESSAGE_TYPE_POSTBACK = "postback";
 export const MESSAGE_TYPE = {
 
 };

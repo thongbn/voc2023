@@ -5,6 +5,7 @@ import ApiHelper, {errorCatch} from "../../../utils/ApiHelper";
 import {useHistory} from 'react-router-dom';
 import {formatDate} from "../../../utils/StringHelper";
 import {
+    nl2br,
     renderCaseStatusTag,
     renderInboxTimeWarning,
     renderPlatformIcon,
@@ -12,7 +13,7 @@ import {
     renderType
 } from "../../../utils/AppRenderHelper";
 import qs from 'qs';
-import {CASE_TYPE_MESSAGE} from "../../../configs/appConfig";
+import {CASE_STATUS_DONE, CASE_TYPE_MESSAGE} from "../../../configs/appConfig";
 
 const {Paragraph, Link} = Typography;
 
@@ -68,7 +69,7 @@ const TicketList = ({query, onChangePage}) => {
             const ticketIds = listTickets.map(item => item.id);
 
             //Run async
-            loadingTagTickets(ticketIds);
+            loadingTagTickets(ticketIds).catch(async e => await message.error(e.message));
 
             setDataList(res.data);
         } catch (e) {
@@ -129,19 +130,24 @@ const TicketList = ({query, onChangePage}) => {
                 return (
                     <Space direction="vertical" size="small">
                         <Typography.Text>
-                            <Link onClick={() => openCustomerDetail(row.customer?.id)}>
-                                <strong>{row.customer?.fullname || '---'}: </strong>
-                            </Link>
-                            {text}
+                            <Paragraph style={{marginBottom: "0.25rem"}} ellipsis={{rows: 2, expandable: true, symbol: "more"}}>
+                                <Link onClick={() => openCustomerDetail(row.customer?.id)}>
+                                    <strong>{row.customer?.fullname || '---'}: </strong>
+                                </Link>
+                                {nl2br(text)}
+                            </Paragraph>
                         </Typography.Text>
                         <Space size="small" split={<Divider type="vertical"/>}>
                             {renderPlatformIcon(row.platform)}
-                            {row.type === CASE_TYPE_MESSAGE && renderInboxTimeWarning(row)}
-                            <Space wrap size={"small"}>
-                                {dataTagList[row.id]?.map((item, idx) => {
-                                    return renderTicketTag(item, "tag-sm");
-                                }) || <Typography.Text italic>Not tagging yet</Typography.Text>}
-                            </Space>
+                            {row.type === CASE_TYPE_MESSAGE
+                            && row.caseStatus !== CASE_STATUS_DONE
+                            && renderInboxTimeWarning(row)}
+                            {dataTagList[row.id] ? <Space wrap size={"small"}>
+                                    {dataTagList[row.id]?.map((item, idx) => {
+                                        return renderTicketTag(item, "tag-sm");
+                                    })}
+                                </Space> :
+                                <Typography.Text italic>Not tagging yet</Typography.Text>}
                         </Space>
                     </Space>
                 )
