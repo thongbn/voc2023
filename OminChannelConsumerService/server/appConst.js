@@ -25,3 +25,18 @@ export const MESSAGE_TYPE_RATINGS = "ratings";
 
 //
 export const FB_LONG_LIVE_TOKEN_KEY = "token-config";
+
+export const CONV_TYPE = {
+    INBOX: "inbox",
+    RATINGS: "ratings",
+    FEED: "feed",
+    FEEDBACK_FORM: "feedback_form",
+    CUSTOM: "custom",
+    COMMUNITY: "community",
+    ATTACHMENT: "attach",
+}
+
+export const INBOX_TYPE = {
+    ATTACHMENT: "attachment",
+    TEXT: "text",
+}

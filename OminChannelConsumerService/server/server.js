@@ -4,6 +4,7 @@ import http from "http";
 import db from "./models";
 import { redisConnect } from "./RedisClient";
 import KaffkaClient from "./KaffkaClient";
+import { initQueue } from './BeeQueueClient';
 
 /**
  * Normalize a port into a number, string, or false.
@@ -81,7 +82,9 @@ const init = async () => {
     console.log("Redis connect - PASSED");
     await KaffkaClient.init();
     await KaffkaClient.connect();
-
+    console.log("Kaffka connect - PASSED");
+    initQueue();
+    console.log("BeeQueue connect - PASSED");
 }
 
 server.listen(port, () => {
