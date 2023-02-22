@@ -1,14 +1,15 @@
-import {findMessageByMid, lockAndUpdateMessage, updateOrCreateMessage} from "../../services/MessageService";
-import {updateOrCreateCustomer} from "../../services/CustomerService";
-import {findLatestAndUnresovledTicketByCustomerId, updateOrCreateTicket} from "../../services/TicketService";
-import {MESSAGE_TYPE_POSTBACK, MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_FB, TICKET_TYPE_MESSAGE} from "../../appConst";
-import {createConversationId} from "../../appHelper";
+import { findMessageByMid, lockAndUpdateMessage, updateOrCreateMessage } from "../../services/MessageService";
+import { updateOrCreateCustomer } from "../../services/CustomerService";
+import { findLatestAndUnresovledTicketByCustomerId, updateOrCreateTicket } from "../../services/TicketService";
+import { CONV_TYPE, INBOX_TYPE, MESSAGE_TYPE_POSTBACK, MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_FB, TICKET_TYPE_MESSAGE } from "../../appConst";
+import { createConversationId } from "../../appHelper";
 import KaffkaClient from "../../KaffkaClient";
+import { createCaseFilterQueueJob, getCaseFilterQueue } from "../../BeeQueueClient";
 
 export const handlePostback = async (platformId, data, rawMessage, isStandBy = false) => {
     //TODO postback
-    const {sender, recipient, timestamp, postback} = data;
-    const {title, payload, mid} = postback;
+    const { sender, recipient, timestamp, postback } = data;
+    const { title, payload, mid } = postback;
 
     if (!sender || !recipient) {
         throw new Error("handleTextAndAttachmentMessage: sender or recipient null");
@@ -30,7 +31,7 @@ export const handlePostback = async (platformId, data, rawMessage, isStandBy = f
             , senderCustomer.id
         );
 
-        if(!ticket){
+        if (!ticket) {
             return null;
         }
 
@@ -46,7 +47,7 @@ export const handlePostback = async (platformId, data, rawMessage, isStandBy = f
             ticketId: ticket.id,
             messageId: textMessage.id,
             isStandBy
-        }).catch(e => console.log(e));
+        }).catch(e => console.error(e));
 
         ticket.lcmTime = new Date(timestamp);
         await ticket.save();
@@ -71,8 +72,8 @@ export const handleRead = async (messaging) => {
 
 export const handleReaction = async (messaging) => {
     //Todo lock mid
-    const {sender, reaction} = messaging;
-    const {mid, action, emoji} = reaction;
+    const { sender, reaction } = messaging;
+    const { mid, action, emoji } = reaction;
     try {
         // find by mid
         const message = await findMessageByMid(PLATFORM_FB, mid);
@@ -127,8 +128,8 @@ export const handleReaction = async (messaging) => {
 };
 
 export const handleTextAndAttachmentMessage = async (platformId, messaging, rawMessage, isStandBy = false) => {
-    const {sender, recipient, timestamp, message} = messaging;
-    const {mid, text, attachments, is_echo = false, reply_to, quick_reply} = message;
+    const { sender, recipient, timestamp, message } = messaging;
+    const { mid, text, attachments, is_echo = false, reply_to, quick_reply } = message;
     //VALIDATE
     if (!sender || !recipient) {
         throw new Error("handleTextAndAttachmentMessage: sender or recipient null");
@@ -187,6 +188,21 @@ export const handleTextAndAttachmentMessage = async (platformId, messaging, rawM
         await ticket.save();
 
         //TODO xử lý quick_reply, reply_to
+
+        //BeeQueue
+        if (text) {
+            createCaseFilterQueueJob({
+                type: CONV_TYPE.INBOX,
+                inboxType: INBOX_TYPE.TEXT,
+                data: messaging
+            });
+        } else if (attachments) {
+            createCaseFilterQueueJob({
+                type: CONV_TYPE.INBOX,
+                inboxType: INBOX_TYPE.ATTACHMENT,
+                data: messaging
+            });
+        }
 
         return textMessage;
     } catch (e) {

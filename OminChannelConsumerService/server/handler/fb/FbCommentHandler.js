@@ -1,9 +1,10 @@
-import {createRawData} from "../../services/RawService";
-import {updateOrCreateCustomer} from "../../services/CustomerService";
-import {MESSAGE_TYPE_RATINGS, MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_FB, PLATFORM_IG} from "../../appConst";
-import {updateOrCreateTicketComment, updateOrCreateTicketRating} from "../../services/TicketService";
-import {updateOrCreateMessage} from "../../services/MessageService";
-import {getCommentDetail, getOpenStoryDetail} from "../../services/GraphApiService";
+import { createRawData } from "../../services/RawService";
+import { updateOrCreateCustomer } from "../../services/CustomerService";
+import { CONV_TYPE, MESSAGE_TYPE_RATINGS, MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_FB, PLATFORM_IG } from "../../appConst";
+import { updateOrCreateTicketComment, updateOrCreateTicketRating } from "../../services/TicketService";
+import { updateOrCreateMessage } from "../../services/MessageService";
+import { getCommentDetail, getOpenStoryDetail } from "../../services/GraphApiService";
+import { createCaseFilterQueueJob } from "../../BeeQueueClient";
 
 export const handleCommentArray = (id, time, changes) => {
     try {
@@ -20,7 +21,7 @@ export const handleCommentArray = (id, time, changes) => {
 };
 
 const handleChange = async (id, time, change) => {
-    const {value, field} = change;
+    const { value, field } = change;
     if (!value) {
         console.error("Unknown change", change);
         return;
@@ -39,10 +40,21 @@ const handleChange = async (id, time, change) => {
             console.log("Un-supported field", field);
             break;
     }
+
+
+    //Bee queue
+    if (field === CONV_TYPE.RATINGS || field === CONV_TYPE.FEED) {
+        createCaseFilterQueueJob({
+            type: field,
+            data: change,
+            id,
+            time,
+        });
+    }
 };
 
 const handleFeed = async (id, time, feed) => {
-    const {item} = feed;
+    const { item } = feed;
     switch (item) {
         case "comment":
             await handleComment(id, time, feed);
@@ -55,7 +67,7 @@ const handleFeed = async (id, time, feed) => {
 
 const handleRating = async (id, time, rating) => {
     try {
-        const {item} = rating;
+        const { item } = rating;
         switch (item) {
             case "rating":
                 await handleItemRating(id, time, rating);
@@ -131,7 +143,7 @@ const handleItemCommentRating = async (id, time, rating) => {
 const handleItemRating = async (id, time, rating) => {
     try {
         let ticket;
-        const {review_text, open_graph_story_id, recommendation_type, reviewer_id, reviewer_name, verb} = rating;
+        const { review_text, open_graph_story_id, recommendation_type, reviewer_id, reviewer_name, verb } = rating;
 
         if (['add', 'delete'].findIndex(item => item === verb) < 0) {
             console.log("Un-supported verb", verb);
@@ -145,17 +157,17 @@ const handleItemRating = async (id, time, rating) => {
         switch (verb) {
             case "add":
                 //TODO truong hop case edit ktr lai case "edit":
-            {
-                ticketMessage.type = MESSAGE_TYPE_RATINGS;
-                ticketMessage.ticketId = ticket.id;
-                ticketMessage.customerId = customer.id;
-                ticketMessage.data = JSON.stringify({
-                    text: review_text,
-                    recommendationType: recommendation_type
-                });
-                await ticketMessage.save();
-                break;
-            }
+                {
+                    ticketMessage.type = MESSAGE_TYPE_RATINGS;
+                    ticketMessage.ticketId = ticket.id;
+                    ticketMessage.customerId = customer.id;
+                    ticketMessage.data = JSON.stringify({
+                        text: review_text,
+                        recommendationType: recommendation_type
+                    });
+                    await ticketMessage.save();
+                    break;
+                }
             case "delete": {
                 if (ticketMessage.customerId === customer.id) {
                     ticketMessage.isDeleted = true;
@@ -185,7 +197,7 @@ const handleItemRating = async (id, time, rating) => {
 const handleComment = async (platformId, time, comment) => {
     try {
         let ticket = null;
-        const {from, parent_id, comment_id, post_id, verb, message} = comment;
+        const { from, parent_id, comment_id, post_id, verb, message } = comment;
         const customer = await updateOrCreateCustomer(PLATFORM_FB, from.id);
         customer.name = from.name;
 
@@ -239,7 +251,7 @@ const handleComment = async (platformId, time, comment) => {
 const updateCommentDetailByApi = async (commentId, ticketMessage) => {
     //TODO implement here
     const commentData = await getCommentDetail(commentId);
-    const {message, attachment} = commentData;
+    const { message, attachment } = commentData;
     let ticketData = ticketMessage.data ? JSON.parse(ticketMessage.data) : {};
     console.log(message, attachment);
     if (message) {

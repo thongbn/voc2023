@@ -100,6 +100,10 @@ export default {
      * @returns {Promise<RecordMetadata[]>}
      */
     async sendFacebook(messages) {
+        if(process.env.PUBLISH_TO_NEW_CHATBOT === false){
+            return;
+        }
+
         try {
             if (!process.env.KAFKA_FB_BOT_TOPIC) {
                 throw new Error("Facebook topic null")
@@ -116,6 +120,9 @@ export default {
      * @returns {Promise<RecordMetadata[]>}
      */
     async sendInstagram(messages) {
+        if(process.env.PUBLISH_TO_NEW_CHATBOT === false){
+            return;
+        }
         try {
             if (!process.env.KAFKA_IG_BOT_TOPIC) {
                 throw new Error("Instagram topic null")
@@ -132,6 +139,9 @@ export default {
      * @returns {Promise<RecordMetadata[]>}
      */
     async sendZalo(messages) {
+        if(process.env.PUBLISH_TO_NEW_CHATBOT === false){
+            return;
+        }
         try {
             if (!process.env.KAKFA_ZL_BOT_TOPIC) {
                 throw new Error("Zalo topic null")
