@@ -1,7 +1,8 @@
 import {updateOrCreateTicketComment} from "../../services/TicketService";
-import {MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_IG} from "../../appConst";
+import {CONV_TYPE, MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_IG} from "../../appConst";
 import {updateOrCreateCustomer} from "../../services/CustomerService";
 import {updateOrCreateMessage} from "../../services/MessageService";
+import {createCaseFilterQueueJob} from "../../BeeQueueClient";
 
 export const handleChangeItem = async (id, time, changeItem) => {
     try {
@@ -21,8 +22,8 @@ export const handleChangeItem = async (id, time, changeItem) => {
 };
 
 const handleComment = async (platformId, time, value) => {
+    const {from, media, id, parent_id, text} = value;
     try {
-        const {from, media, id, parent_id, text} = value;
         //Truong hop co parent_id --> tim ticket tuong ung luu media id vao ticket
         let ticket = null;
         const customer = await updateOrCreateCustomer(PLATFORM_IG, from.id, from.username);
@@ -67,5 +68,12 @@ const handleComment = async (platformId, time, value) => {
         console.log(textMessage);
     } catch (e) {
         throw e;
+    }finally {
+        createCaseFilterQueueJob({
+            type: CONV_TYPE.IG_FEED,
+            data: value,
+            id,
+            time,
+        });
     }
 };

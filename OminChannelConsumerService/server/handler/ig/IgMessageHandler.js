@@ -4,6 +4,8 @@ import {getInstgramSettings} from "../../services/ConfigService";
 import db from "../../models";
 import {findLatestAndUnresovledTicketByCustomerId, updateOrCreateTicket} from "../../services/TicketService";
 import {
+    CONV_TYPE,
+    INBOX_TYPE,
     MESSAGE_TYPE_POSTBACK,
     MESSAGE_TYPE_TEXT_ATTACHMENTS,
     PLATFORM_IG,
@@ -11,6 +13,7 @@ import {
 } from "../../appConst";
 import {createConversationId} from "../../appHelper";
 import KaffkaClient from "../../KaffkaClient";
+import {createCaseFilterQueueJob} from "../../BeeQueueClient";
 
 export const handleReaction = async (messaging) => {
     //Todo lock mid
@@ -154,7 +157,7 @@ export const handleRead = async (messaging) => {
 
 export const handleQuickReplyMessage = async (platformId, messaging, rawMessage, isStandBy = false) => {
     const {sender, recipient, timestamp, message} = messaging;
-    const {mid} = message;
+    const {mid, quick_reply} = message;
 
     if (!sender || !recipient) {
         throw new Error("handleTextAndAttachmentMessage: sender or recipient null");
@@ -197,12 +200,20 @@ export const handleQuickReplyMessage = async (platformId, messaging, rawMessage,
     } catch (e) {
         console.error(e);
         throw e;
+    } finally {
+        if (quick_reply) {
+            createCaseFilterQueueJob({
+                type: CONV_TYPE.IG_INBOX,
+                inboxType: INBOX_TYPE.QUICK_REPLY,
+                data: messaging
+            });
+        }
     }
 };
 
 export const handleTextAndAttachmentMessage = async (igId, messaging, rawMessage, isStandBy = false) => {
     const {sender, recipient, timestamp, message} = messaging;
-    const {mid, text, attachments, is_deleted} = message;
+    const {mid, text, attachments, quick_reply, is_deleted} = message;
     //VALIDATE
     if (!sender || !recipient) {
         throw new Error("handleTextAndAttachmentMessage:sender or recipient null");
@@ -286,5 +297,20 @@ export const handleTextAndAttachmentMessage = async (igId, messaging, rawMessage
     } catch (e) {
         console.error(e);
         throw e;
+    } finally {
+        //BeeQueue
+        if (text) {
+            createCaseFilterQueueJob({
+                type: CONV_TYPE.IG_INBOX,
+                inboxType: INBOX_TYPE.TEXT,
+                data: messaging
+            });
+        } else if (attachments) {
+            createCaseFilterQueueJob({
+                type: CONV_TYPE.IG_INBOX,
+                inboxType: INBOX_TYPE.ATTACHMENT,
+                data: messaging
+            });
+        }
     }
 };

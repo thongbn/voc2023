@@ -1,15 +1,22 @@
-import { findMessageByMid, lockAndUpdateMessage, updateOrCreateMessage } from "../../services/MessageService";
-import { updateOrCreateCustomer } from "../../services/CustomerService";
-import { findLatestAndUnresovledTicketByCustomerId, updateOrCreateTicket } from "../../services/TicketService";
-import { CONV_TYPE, INBOX_TYPE, MESSAGE_TYPE_POSTBACK, MESSAGE_TYPE_TEXT_ATTACHMENTS, PLATFORM_FB, TICKET_TYPE_MESSAGE } from "../../appConst";
-import { createConversationId } from "../../appHelper";
+import {findMessageByMid, lockAndUpdateMessage, updateOrCreateMessage} from "../../services/MessageService";
+import {updateOrCreateCustomer} from "../../services/CustomerService";
+import {findLatestAndUnresovledTicketByCustomerId, updateOrCreateTicket} from "../../services/TicketService";
+import {
+    CONV_TYPE,
+    INBOX_TYPE,
+    MESSAGE_TYPE_POSTBACK,
+    MESSAGE_TYPE_TEXT_ATTACHMENTS,
+    PLATFORM_FB,
+    TICKET_TYPE_MESSAGE
+} from "../../appConst";
+import {createConversationId} from "../../appHelper";
 import KaffkaClient from "../../KaffkaClient";
-import { createCaseFilterQueueJob, getCaseFilterQueue } from "../../BeeQueueClient";
+import {createCaseFilterQueueJob} from "../../BeeQueueClient";
 
 export const handlePostback = async (platformId, data, rawMessage, isStandBy = false) => {
     //TODO postback
-    const { sender, recipient, timestamp, postback } = data;
-    const { title, payload, mid } = postback;
+    const {sender, recipient, timestamp, postback} = data;
+    const {title, payload, mid} = postback;
 
     if (!sender || !recipient) {
         throw new Error("handleTextAndAttachmentMessage: sender or recipient null");
@@ -55,6 +62,11 @@ export const handlePostback = async (platformId, data, rawMessage, isStandBy = f
     } catch (e) {
         console.error(e);
         throw e;
+    } finally {
+        createCaseFilterQueueJob({
+            type: CONV_TYPE.POSTBACK,
+            data: data
+        });
     }
 };
 
@@ -128,15 +140,14 @@ export const handleReaction = async (messaging) => {
 };
 
 export const handleTextAndAttachmentMessage = async (platformId, messaging, rawMessage, isStandBy = false) => {
-    const { sender, recipient, timestamp, message } = messaging;
-    const { mid, text, attachments, is_echo = false, reply_to, quick_reply } = message;
+    const {sender, recipient, timestamp, message} = messaging;
+    const {mid, text, attachments, is_echo = false, reply_to, quick_reply} = message;
+
     //VALIDATE
     if (!sender || !recipient) {
         throw new Error("handleTextAndAttachmentMessage: sender or recipient null");
     }
-    //const senderCustomer = await updateOrCreateCustomer(PLATFORM_IG, sender.id);
-    //const reciptientCustomer = await updateOrCreateCustomer(PLATFORM_IG, recipient.id);
-    // console.log(senderCustomer, receiverCustomer);
+
     try {
         //UPDATE OR SAVE CUSTOMER
         const c1 = updateOrCreateCustomer(PLATFORM_FB, sender.id);
@@ -162,20 +173,19 @@ export const handleTextAndAttachmentMessage = async (platformId, messaging, rawM
         await lockAndUpdateMessage(textMessage, ticket.id, rawMessage.id, message);
 
         //TODO Lock and update ticket here
+        let canSendBot = true;
         if (!quick_reply) {
+            canSendBot = false;
             if (!ticket.firstMessage) {
-
                 ticket.firstMessage = text ?
                     text :
                     (attachments ? "Customer send Attachment" : "Customer send unsupported type");
-                //Gui thong tin den bot service
-                KaffkaClient.sendFacebook({
-                    ticketId: ticket.id,
-                    messageId: textMessage.id,
-                    isStandBy
-                }).catch(e => console.log(e));
+                canSendBot = true;
             }
-        } else {
+        }
+
+        if (canSendBot) {
+            //Gui thong tin den bot service
             KaffkaClient.sendFacebook({
                 ticketId: ticket.id,
                 messageId: textMessage.id,
@@ -198,6 +208,11 @@ export const handleTextAndAttachmentMessage = async (platformId, messaging, rawM
 
         //TODO xử lý quick_reply, reply_to
 
+        return textMessage;
+    } catch (e) {
+        console.error(e);
+        throw e;
+    } finally {
         //BeeQueue
         if (text) {
             createCaseFilterQueueJob({
@@ -212,10 +227,5 @@ export const handleTextAndAttachmentMessage = async (platformId, messaging, rawM
                 data: messaging
             });
         }
-
-        return textMessage;
-    } catch (e) {
-        console.error(e);
-        throw e;
     }
 };

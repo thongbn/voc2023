@@ -102,8 +102,8 @@ export default {
      * @returns {Promise<RecordMetadata[]>}
      */
     async sendFacebook(messages) {
-        if(process.env.PUBLISH_TO_NEW_CHATBOT === false){
-            return;
+        if(process.env.PUBLISH_TO_NEW_CHATBOT_FB === "false"){
+            return null;
         }
 
         try {
@@ -122,8 +122,8 @@ export default {
      * @returns {Promise<RecordMetadata[]>}
      */
     async sendInstagram(messages) {
-        if(process.env.PUBLISH_TO_NEW_CHATBOT === false){
-            return;
+        if(process.env.PUBLISH_TO_NEW_CHATBOT_IG === "false"){
+            return null;
         }
         try {
             if (!process.env.KAFKA_IG_BOT_TOPIC) {
@@ -141,8 +141,8 @@ export default {
      * @returns {Promise<RecordMetadata[]>}
      */
     async sendZalo(messages) {
-        if(process.env.PUBLISH_TO_NEW_CHATBOT === false){
-            return;
+        if(process.env.PUBLISH_TO_NEW_CHATBOT_ZL === "false"){
+            return null;
         }
         try {
             if (!process.env.KAKFA_ZL_BOT_TOPIC) {

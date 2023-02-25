@@ -137,7 +137,6 @@ export const createIgButtons = async (message, params) => {
     });
 
     botScriptButtons.map((val, idx) => {
-        let tempParam = params;
         if (val.type === BUTTON_MODE_TYPE_WEB_URL) {
             let splitted = val.payload.split("#");
             let url = splitted[0];

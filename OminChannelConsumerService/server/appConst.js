@@ -34,9 +34,14 @@ export const CONV_TYPE = {
     CUSTOM: "custom",
     COMMUNITY: "community",
     ATTACHMENT: "attach",
-}
+    POSTBACK: "postback",
+    IG_POSTBACK: "ig_postback",
+    IG_INBOX: "ig_inbox",
+    IG_FEED: "ig_feed",
+};
 
 export const INBOX_TYPE = {
     ATTACHMENT: "attachment",
     TEXT: "text",
-}
+    QUICK_REPLY: "quick_reply",
+};
