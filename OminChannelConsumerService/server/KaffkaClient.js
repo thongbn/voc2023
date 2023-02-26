@@ -24,7 +24,6 @@ export default {
         kafka = new Kafka({
             clientId: `${process.env.QUEUE_PREFIX}_${process.env.KAFKA_CLIENT_ID}`,
             brokers: process.env.KAFKA_BROKER.split(",")
-                .map(item => `${process.env.QUEUE_PREFIX}_${item}`)
         });
         consumer = kafka.consumer({
             groupId: `${process.env.QUEUE_PREFIX}${process.env.KAFKA_GROUP_ID}`

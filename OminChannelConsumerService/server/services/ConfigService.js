@@ -83,8 +83,8 @@ const getConfig = async (keyName) => {
         if (!model) {
             const defaultSetting = {
                 kafka: {
-                    brokers: `${process.env.QUEUE_PREFIX}_${process.env.KAFKA_BROKER}`,
-                    clientId: `${process.env.QUEUE_PREFIX}_${process.env.KAFKA_CLIENT_ID}`,
+                    brokers: ``,
+                    clientId: ``,
                 }, facebook: {
                     verifyToken: "",
                     appSecret: "",

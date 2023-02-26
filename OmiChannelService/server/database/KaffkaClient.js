@@ -8,7 +8,6 @@ export default {
         kafka = new Kafka({
             clientId: `${process.env.QUEUE_PREFIX}_${process.env.KAFKA_CLIENT_ID}`,
             brokers: process.env.KAFKA_BROKER.split(",")
-                .map(item => `${process.env.QUEUE_PREFIX}_${item}`)
         });
         producer = kafka.producer({
             allowAutoTopicCreation: true,
