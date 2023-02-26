@@ -9,7 +9,7 @@ export default class BaseHandler {
     platform;
 
     constructor(topic, platform) {
-        this.topic = topic;
+        this.topic = `${process.env.QUEUE_PREFIX}_${topic}`;
         this.platform = platform;
     }
 

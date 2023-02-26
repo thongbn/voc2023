@@ -18,13 +18,12 @@ export default {
     },
 
     async init() {
-        const settings = await getKafkaSettings();
         kafka = new Kafka({
-            clientId: settings.clientId,
-            brokers: settings.brokers.split(",")
+            clientId: `${process.env.QUEUE_PREFIX}_${process.env.KAFKA_CLIENT_ID}`,
+            brokers: process.env.KAFKA_BROKER.split(",")
         });
         consumer = kafka.consumer({
-            groupId: process.env.KAFKA_GROUP_ID
+            groupId: `${process.env.QUEUE_PREFIX}${process.env.KAFKA_GROUP_ID}`
         });
 
         this.registerHandler(new FacebookHandler());
@@ -38,9 +37,9 @@ export default {
             await consumer.connect();
             await consumer.subscribe({
                 topics: [
-                    process.env.KAFKA_FB_BOT_TOPIC,
-                    process.env.KAFKA_IG_BOT_TOPIC,
-                    process.env.KAKFA_ZL_BOT_TOPIC,
+                    `${process.env.QUEUE_PREFIX}_${process.env.KAFKA_FB_BOT_TOPIC}`,
+                    `${process.env.QUEUE_PREFIX}_${process.env.KAFKA_IG_BOT_TOPIC}`,
+                    `${process.env.QUEUE_PREFIX}_${process.env.KAKFA_ZL_BOT_TOPIC}`,
                 ]
             });
             console.log('Kafka Bot Service running...');

@@ -46,9 +46,9 @@ export default {
             await consumer.connect();
             await consumer.subscribe({
                 topics: [
-                    process.env.KAFKA_TOPIC_FB,
-                    process.env.KAFKA_TOPIC_INSTAGRAM,
-                    process.env.KAFKA_TOPIC_ZALO,
+                    `${process.env.QUEUE_PREFIX}_${process.env.KAFKA_TOPIC_FB}`,
+                    `${process.env.QUEUE_PREFIX}_${process.env.KAFKA_TOPIC_INSTAGRAM}`,
+                    `${process.env.QUEUE_PREFIX}_${process.env.KAFKA_TOPIC_ZALO}`,
                 ]
             });
             console.log('Kafka Consumer running...');
