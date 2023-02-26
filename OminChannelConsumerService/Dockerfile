@@ -9,5 +9,5 @@ RUN yarn install --pure-lockfile
 
 COPY . .
 
-EXPOSE 3001
+EXPOSE 4001
 CMD ["sh", "-c", "yarn run migrate-db && yarn run prod"]
