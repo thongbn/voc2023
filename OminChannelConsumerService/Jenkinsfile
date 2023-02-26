@@ -4,9 +4,9 @@ pipeline {
         stage('Build'){
             steps{
                 script {
-                    dir("affiliate-service"){
-                        docker.build("smileup/affiliate-service:${env.BUILD_ID}")
-                        docker.build("smileup/affiliate-service:latest")
+                    dir("OminChannelConsumerService"){
+                        docker.build("omi/ep-consumer-service:${env.BUILD_ID}")
+                        docker.build("omi/ep-consumer-service:latest")
                     }
                 }
             }

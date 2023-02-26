@@ -1,5 +1,4 @@
 import {Kafka} from 'kafkajs';
-import {getKafkaSettings} from './services/ConfigService';
 import FacebookHandler from "./handler/fb/FacebookHandler";
 import IgHandler from "./handler/ig/IgHandler";
 import crypto from "crypto";
@@ -22,13 +21,13 @@ export default {
     },
 
     async init() {
-        const settings = await getKafkaSettings();
         kafka = new Kafka({
-            clientId: settings.clientId,
-            brokers: settings.brokers.split(",")
+            clientId: `${process.env.QUEUE_PREFIX}_${process.env.KAFKA_CLIENT_ID}`,
+            brokers: process.env.KAFKA_BROKER.split(",")
+                .map(item => `${process.env.QUEUE_PREFIX}_${item}`)
         });
         consumer = kafka.consumer({
-            groupId: process.env.KAFKA_GROUP_ID
+            groupId: `${process.env.QUEUE_PREFIX}${process.env.KAFKA_GROUP_ID}`
         });
 
         producer = kafka.producer({
@@ -86,7 +85,7 @@ export default {
             .digest("hex");
 
         return await producer.send({
-            topic,
+            topic: `${process.env.QUEUE_PREFIX}_${topic}`,
             messages: [
                 {
                     key,
@@ -102,7 +101,7 @@ export default {
      * @returns {Promise<RecordMetadata[]>}
      */
     async sendFacebook(messages) {
-        if(process.env.PUBLISH_TO_NEW_CHATBOT_FB === "false"){
+        if (process.env.PUBLISH_TO_NEW_CHATBOT_FB === "false") {
             return null;
         }
 
@@ -122,7 +121,7 @@ export default {
      * @returns {Promise<RecordMetadata[]>}
      */
     async sendInstagram(messages) {
-        if(process.env.PUBLISH_TO_NEW_CHATBOT_IG === "false"){
+        if (process.env.PUBLISH_TO_NEW_CHATBOT_IG === "false") {
             return null;
         }
         try {
@@ -141,7 +140,7 @@ export default {
      * @returns {Promise<RecordMetadata[]>}
      */
     async sendZalo(messages) {
-        if(process.env.PUBLISH_TO_NEW_CHATBOT_ZL === "false"){
+        if (process.env.PUBLISH_TO_NEW_CHATBOT_ZL === "false") {
             return null;
         }
         try {
@@ -155,10 +154,10 @@ export default {
     },
 
     /**
-     * 
-     * @param {number} ticketId 
-     * @param {string} textMessage 
-     * @returns 
+     *
+     * @param {number} ticketId
+     * @param {string} textMessage
+     * @returns
      */
     async sendTag(ticketId, textMessage) {
         try {

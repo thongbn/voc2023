@@ -83,18 +83,16 @@ const getConfig = async (keyName) => {
         if (!model) {
             const defaultSetting = {
                 kafka: {
-                    brokers: process.env.KAFKA_BROKER,
-                    clientId: process.env.KAFKA_CLIENT_ID,
+                    brokers: `${process.env.QUEUE_PREFIX}_${process.env.KAFKA_BROKER}`,
+                    clientId: `${process.env.QUEUE_PREFIX}_${process.env.KAFKA_CLIENT_ID}`,
                 }, facebook: {
-                    topic: process.env.KAFKA_TOPIC_FB,
-                    verifyToken: process.env.FACEBOOK_VERIFY_TOKEN,
-                    appSecret: process.env.FACEBOOK_APP_SECRET,
-                    accessToken: process.env.FACEBOOK_ACCESS_TOKEN,
+                    verifyToken: "",
+                    appSecret: "",
+                    accessToken: "",
                 }, instagram: {
-                    topic: process.env.KAFKA_TOPIC_INSTAGRAM,
-                    verifyToken: process.env.FACEBOOK_VERIFY_TOKEN,
-                    appSecret: process.env.FACEBOOK_APP_SECRET,
-                    accessToken: process.env.INSTGRAM_ACCESS_TOKEN,
+                    verifyToken: "",
+                    appSecret: "",
+                    accessToken: "",
                 }
             };
             model = db.Setting.build({

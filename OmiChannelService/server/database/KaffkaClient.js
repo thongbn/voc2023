@@ -1,16 +1,14 @@
 import {Kafka} from 'kafkajs';
 import crypto from 'crypto';
-import {getKafkaConfig} from "../services/ConfigService";
 
 let kafka;
 let producer;
 export default {
     async init() {
-        const kafkaConfig = await getKafkaConfig();
-        console.log(kafkaConfig);
         kafka = new Kafka({
-            clientId: kafkaConfig.clientId,
-            brokers: kafkaConfig.brokers.split(",")
+            clientId: `${process.env.QUEUE_PREFIX}_${process.env.KAFKA_CLIENT_ID}`,
+            brokers: process.env.KAFKA_BROKER.split(",")
+                .map(item => `${process.env.QUEUE_PREFIX}_${item}`)
         });
         producer = kafka.producer({
             allowAutoTopicCreation: true,
@@ -39,7 +37,7 @@ export default {
             .digest("hex");
 
         return await producer.send({
-            topic,
+            topic: `${process.env.QUEUE_PREFIX}_${topic}`,
             messages: [
                 {
                     key,

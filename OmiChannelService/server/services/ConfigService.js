@@ -83,16 +83,14 @@ export const getConfig = async (keyName, defaultSetting = {}) => {
 export const getOmiConfig = async () => {
     return await getConfig("omi-config", {
         kafka: {
-            brokers: process.env.KAFKA_BROKER,
-            clientId: process.env.KAFKA_CLIENT_ID,
+            brokers: "",
+            clientId: "",
         }, facebook: {
-            topic: process.env.KAFKA_TOPIC_FB,
-            verifyToken: process.env.FACEBOOK_VERIFY_TOKEN,
-            appSecret: process.env.FACEBOOK_APP_SECRET
+            verifyToken: "",
+            appSecret: ""
         }, instagram: {
-            topic: process.env.KAFKA_TOPIC_INSTAGRAM,
-            verifyToken: process.env.FACEBOOK_VERIFY_TOKEN,
-            appSecret: process.env.FACEBOOK_APP_SECRET
+            verifyToken: "",
+            appSecret: ""
         }
     })
 };

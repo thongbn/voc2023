@@ -3,7 +3,7 @@ import axios from "axios";
 import createError from "http-errors";
 
 const getBaseUrl = () => {
-    return process.env.GRAPH_API_URL;
+    return process.env.FB_GRAPH_API;
 };
 
 export const graphApiGet = async (path, queryObj, messTokenType = "fb") => {
