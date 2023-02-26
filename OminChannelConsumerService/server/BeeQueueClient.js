@@ -13,6 +13,7 @@ export const initQueue = () => {
             port: process.env.BEE_QUEUE_REDIS_PORT,
             db: process.env.BEE_QUEUE_REDIS_DB,
         },
+        prefix: process.env.QUEUE_PREFIX
     });
 
     // instagramQueue = new BeeQueue(process.env.CASE_FILTER_QUEUE, {
