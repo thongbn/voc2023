@@ -5,7 +5,7 @@ pipeline {
            steps {
                    configFileProvider([
                                configFile(fileId: 'frontend-env',
-                               targetLocation: 'frontend/.env')
+                               targetLocation: 'AminGui/.env')
                                ]) {}
                }
            }
