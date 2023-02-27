@@ -13,8 +13,8 @@ pipeline {
             steps{
                 script {
                     dir("frontend"){
-                        docker.build("smileup/affiliate-frontend:${env.BUILD_ID}")
-                        docker.build("smileup/affiliate-frontend:latest")
+                        docker.build("aeon/admin-gui:${env.BUILD_ID}")
+                        docker.build("aeon/admin-gui:latest")
                     }
                 }
             }
