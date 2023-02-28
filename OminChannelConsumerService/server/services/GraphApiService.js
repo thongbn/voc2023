@@ -1,10 +1,10 @@
-import {getFbMessToken} from "./ConfigService";
+import {getFbLLTToken} from "./ConfigService";
 import axios from "axios";
 
 const baseApi = process.env.FB_GRAPH_API || "https://graph.facebook.com";
 
 export const getCustomerInfoViaPsId = async (psid) => {
-    const getToken = await getFbMessToken();
+    const getToken = await getFbLLTToken();
     const url = `${baseApi}/${psid}`
         + `?access_token=${getToken}`;
     try {
@@ -18,7 +18,7 @@ export const getCustomerInfoViaPsId = async (psid) => {
 };
 
 export const getCommentDetail = async (commentId) => {
-    const getToken = await getFbMessToken();
+    const getToken = await getFbLLTToken();
     const url = `${baseApi}/${commentId}`;
     try{
         const res = await axios.get(url, {
@@ -35,7 +35,7 @@ export const getCommentDetail = async (commentId) => {
 };
 
 export const getOpenStoryDetail = async (osid, customParams = {}) => {
-    const getToken = await getFbMessToken();
+    const getToken = await getFbLLTToken();
     const url = `${baseApi}/${osid}`;
     try{
         const res = await axios.get(url, {
