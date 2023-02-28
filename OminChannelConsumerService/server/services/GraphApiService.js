@@ -12,7 +12,7 @@ export const getCustomerInfoViaPsId = async (psid) => {
         console.log("getCustomerInfoViaPsId", JSON.stringify(res.data));
         return res.data;
     } catch (e) {
-        console.error(url, e);
+        console.error(url, e.response?.data || e.message);
         return null;
     }
 };
@@ -30,7 +30,7 @@ export const getCommentDetail = async (commentId) => {
         console.log("getCommentDetail", JSON.stringify(res.data));
         return res.data;
     }catch (e) {
-        console.error(url, e);
+        console.error(url, e.response?.data || e.message);
     }
 };
 
@@ -47,6 +47,6 @@ export const getOpenStoryDetail = async (osid, customParams = {}) => {
         console.log("getOpenStoryDetail", JSON.stringify(res.data));
         return res.data;
     }catch (e) {
-        console.error(url, e);
+        console.error(url, e.response?.data || e.message);
     }
 };
